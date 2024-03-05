@@ -465,6 +465,45 @@ tax_table(physeq) %>%
   kable()
 ```
 
+
+per class
+
+```{r per-class}
+# Count OTUs per Class
+tax_table(physeq) %>%
+  as.data.frame() %>%
+  as_tibble() %>%
+  group_by(class) %>%
+  summarise(OTU_Count = n()) %>%
+  kable()
+```
+
+
+per order
+
+```{r per-order}
+# Count OTUs per order
+tax_table(physeq) %>%
+  as.data.frame() %>%
+  as_tibble() %>%
+  group_by(order) %>%
+  summarise(OTU_Count = n()) %>%
+  kable()
+```
+
+per family
+
+```{r per-family}
+# Count OTUs per family
+tax_table(physeq) %>%
+  as.data.frame() %>%
+  as_tibble() %>%
+  group_by(family) %>%
+  summarise(OTU_Count = n()) %>%
+  kable()
+```
+
+
 Per genus
 
 ```{r per-genus}
@@ -490,6 +529,29 @@ tax_table(physeq) %>%
 
 ## Read counts
 
+Overzicht van som van reads per phylum:
+
+```{r}
+tidy_physeq %>%
+  tidytacos::aggregate_taxa(rank = "phylum") %>%
+  tidytacos::everything() %>%
+  group_by(phylum) %>%
+  summarise(read_counts = sum(count)) %>%
+  arrange(desc(read_counts)) %>%
+  kable()
+```
+
+Overzicht van som van reads per class:
+
+```{r}
+tidy_physeq %>%
+  tidytacos::aggregate_taxa(rank = "class") %>%
+  tidytacos::everything() %>%
+  group_by(class) %>%
+  summarise(read_counts = sum(count)) %>%
+  arrange(desc(read_counts)) %>%
+  kable()
+```
 
 Overzicht van som van reads per family:
 
@@ -503,6 +565,17 @@ tidy_physeq %>%
   kable()
 ```
 
+Overzicht van som van reads per genus:
+
+```{r}
+tidy_physeq %>%
+  tidytacos::aggregate_taxa(rank = "genus") %>%
+  tidytacos::everything() %>%
+  group_by(genus) %>%
+  summarise(read_counts = sum(count)) %>%
+  arrange(desc(read_counts)) %>%
+  kable()
+```
 
 ## Ordinatie
 
