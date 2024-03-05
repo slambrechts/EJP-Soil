@@ -66,12 +66,11 @@ Deze tabelletjes kunnen best gewoon csv bestanden zijn die we inlezen.
 ```{r load-rdata-file}
 path_naar_bestand <- file.path(
     ejp_folder,
-    "4c_bodembiodiversiteit",
-    "data",
-    "statistiek",
-    "Annelida",
+    "Bodem_biodiversiteit",
+    "03_resultaten",
     "phyloseq",
-    "physeq_Olig01_Annelida_species.Rdata"
+    "inse01",
+    "physeq_Inse01.Rdata"
   )
 
 load(path_naar_bestand)
@@ -84,7 +83,8 @@ Het bestand dat wordt ingelezen is `r basename(path_naar_bestand)`.
 <!--vergeet HIER niet te starten van de NIET-rarefied versie-->
 
 ```{r hernoem-object}
-physeq <- physeq_Olig01_Annelida_species
+physeq <- physeq_Inse01
+physeq
 ```
 
 
@@ -94,12 +94,24 @@ physeq <- physeq_Olig01_Annelida_species
 
 Filter taxongroep:
 
-```{r filter-taxongroep}
-physeq <- subset_taxa(
-  physeq,
-  phylum == "Annelida")
+```{r even_depth}
 
-physeq_rarefied <- rarefy_even_depth(physeq, sample.size = 30780)
+sample_sums <- sample_sums(physeq)
+
+getwd()
+
+write.csv(sample_sums, file = "Inse01_full_sample_sums.csv")
+
+# Define the classes to keep
+classes_to_keep <- c("Insecta", "Arachnida", "Chilopoda", "Diplura", "Malacostraca")
+
+# Subset the phyloseq object to include only specified classes
+physeq_insecta <- subset_taxa(physeq, class %in% classes_to_keep)
+
+sample_sums <- sample_sums(physeq_insecta)
+
+
+physeq_rarefied <- rarefy_even_depth(physeq, sample.size = )
 
 ```
 
@@ -130,9 +142,20 @@ veganobject <- psotu2veg(physeq)
 
 ```{r convert-tidytacos}
 tidy_physeq <- tidytacos::from_phyloseq(physeq)
+
+tidy_physeq_insecta <- tidytacos::from_phyloseq(physeq_insecta)
+
 tidy_physeq_rarefied <- tidytacos::from_phyloseq(physeq_rarefied)
 
 tidy_physeq <- tidy_physeq %>%
+  remove_empty_samples() %>%
+  tidytacos::set_rank_names(
+    rank_names = c("phylum", "class", "order", "family", "genus", "species")
+  ) %>%
+  tidytacos::add_alpha() %>%
+  tidytacos::add_total_count()
+
+tidy_physeq_insecta <- tidy_physeq_insecta %>%
   remove_empty_samples() %>%
   tidytacos::set_rank_names(
     rank_names = c("phylum", "class", "order", "family", "genus", "species")
@@ -171,13 +194,12 @@ sample_sums(physeq) %>%
   quantile(probs = seq(0, 1, 0.1))
 ```
 
-Er zijn dus lege samples (zonder OTUs).
 
 We verkennen ook de verdeling van de samples over de belangrijkste design-variabelen:
 
 ```{r designvars}
 tidy_physeq$samples %>%
-  count(Diepte, Landgebruik_ejp) %>%
+  count(Protocol2, Landgebruik) %>%
   kable()
 ```
 
@@ -185,42 +207,41 @@ Aantal bodemlocaties:
 
 ```{r}
 tidy_physeq$samples %>%
-  group_by(Landgebruik_ejp) %>%
-  summarise(n_locaties = n_distinct(Cmon_PlotID)) %>%
+  group_by(Landgebruik) %>%
+  summarise(n_locaties = n_distinct(Naam)) %>%
+  kable()
+
+```
+
+```{r}
+tidy_physeq$samples %>%
+  group_by(Protocol2) %>%
+  summarise(n_locaties = n_distinct(Naam)) %>%
   kable()
 ```
 
 De meeste 0-10 cm en 10-30 cm stalen zijn van dezelfde locatie.
 Met deze gepaardheid moeten we rekening houden in analyses.
 
-Verspreiding van de bodemlocaties in Vlaanderen:
-
-```{r}
-tidy_physeq$samples %>%
-  distinct(Cmon_PlotID, c_LB72X, c_LB72Y, Landgebruik_ejp) %>%
-  st_as_sf(coords = c("c_LB72X", "c_LB72Y"), crs = 31370) %>%
-  ggplot() +
-  geom_sf(aes(colour = Landgebruik_ejp))
-```
 
 ## OTU tabel
 
 ```{r verken-otu-data}
 
 
-glimpse(otu_table(physeq_rarefied) %>% as.data.frame %>% as_tibble())
+glimpse(otu_table(physeq) %>% as.data.frame %>% as_tibble())
 ```
 
 ## Taxonomie tabel
 
 
 ```{r verken-taxonomie-data}
-glimpse(tax_table(physeq_rarefied) %>% as.data.frame %>% as_tibble())
+glimpse(tax_table(physeq) %>% as.data.frame %>% as_tibble())
 ```
 
 ```{r GBIF-check-presence}
 
-species <- as.vector(tax_table(physeq)[, "species"])
+species <- as.vector(tax_table(physeq_insecta)[, "species"])
 species <- species[!grepl("_otu", species)]
 species <- gsub("_", " ", species)
 source(here::here("source/r/check_presence.R"))
@@ -230,38 +251,38 @@ filter(!present) %>%
   kable(caption = "Not present according to GBIF in Western-Europe")
 ```
 
-Unieke en gedeelde taxa per diepte:
+Unieke en gedeelde taxa per Protocol2 over heel de dataset:
 
 ```{r}
-tidy_physeq_rarefied %>%
-  tidytacos::tacoplot_venn(Diepte)
+tidy_physeq_insecta %>%
+  tidytacos::tacoplot_venn(Protocol2)
 ```
 
 Unieke en gedeelde taxa per landgebruik:
 
 ```{r}
-tidy_physeq_rarefied %>%
-  tidytacos::tacoplot_venn(Landgebruik_ejp)
+tidy_physeq_insecta %>%
+  tidytacos::tacoplot_venn(Landgebruik)
 ```
 
 ```{r}
-tidy_physeq_rarefied %>%
+tidy_physeq %>%
   tidytacos::tacoplot_stack()
 ```
 
 ```{r}
 # Create a new combined column
-combined_column <- paste(sample_data(physeq_rarefied)$Landgebruik_ejp, sample_data(physeq_rarefied)$Diepte, sep = "_")
+combined_column <- paste(sample_data(physeq_rarefied)$Landgebruik, sample_data(physeq_rarefied)$Protocol2, sep = "_")
 
 # Add the new combined column to the sample metadata with the desired name
-sample_data(physeq_rarefied)$Landgebruik_ejp_diepte <- combined_column
+sample_data(physeq_rarefied)$Landgebruik_Protocol2 <- combined_column
 
 # Update the phyloseq object with the modified sample data
 physeq_rarefied <- merge_phyloseq(physeq_rarefied, sample_data(physeq_rarefied))
 
 
 if (system(command = "which ktImportText",  intern = FALSE, ignore.stderr = TRUE,  ignore.stdout = TRUE) != 1) {
-  psadd::plot_krona(physeq_rarefied, "ejp_Olig01_Annelida_rar_species_alle_stalen_Landgebruik_ejp_per_diepte", "Landgebruik_ejp_diepte", trim = T)
+  psadd::plot_krona(physeq_rarefied, "ejp_Olig01_insecta_rar_species_alle_stalen_Landgebruik_per_Protocol2", "Landgebruik_Protocol2", trim = T)
 }
 
 
@@ -270,13 +291,13 @@ if (system(command = "which ktImportText",  intern = FALSE, ignore.stderr = TRUE
 
 
 ```{r}
-tidy_physeq_rarefied %>%
-  tidytacos::tacoplot_stack(x = Landgebruik_ejp)
+tidy_physeq %>%
+  tidytacos::tacoplot_stack(x = Landgebruik)
 ```
 
 ```{r}
-tidy_physeq_rarefied %>%
-  tidytacos::tacoplot_stack(x = Diepte)
+tidy_physeq %>%
+  tidytacos::tacoplot_stack(x = Protocol2)
 ```
 
 
@@ -296,28 +317,28 @@ tidy_physeq$samples %>%
   labs(y = "Observed number of taxa")
 ```
 
-We fitten een model waarbij we de log van het totaal aantal reads in een staal als covariaat toevoegen samen met landgebruik en diepte van het staal (de laatste twee in interactie).
+We fitten een model waarbij we de log van het totaal aantal reads in een staal als covariaat toevoegen samen met landgebruik en Protocol2 van het staal (de laatste twee in interactie).
 We voegen ook een random intercept toe die aangeeft op welke locatie een staal werd genomen.
-Hiermee geven we aan dat stalen op verschillende diepte, maar dezelfde locatie, gecorreleerd zijn.
+Hiermee geven we aan dat stalen op verschillende Protocol2, maar dezelfde locatie, gecorreleerd zijn.
 Voor deze analyse, verwijderen we enkele stalen met een laag totaal aantal reads ($\leq 1e+4$).
 
 We modelleren de soortenrijkdom als een Negatief Binomiaal model omdat we verwachten dat deze data overdispersie vertonen ten opzichte van een Poisson verdeling (waar de veronderstelling is dat de variantie gelijk aan het gemiddelde).
 
-```{r m-annelida-richness}
+```{r m-inse01-richness}
 samples_totcount_10k <- tidy_physeq$samples %>%
   filter(total_count > 1e+4)
 
-form_annelida_richness <- formula(
+form_insecta_richness <- formula(
   observed ~
     log(total_count)
-  + Landgebruik_ejp
-  + Diepte
-  + Landgebruik_ejp:Diepte
-  + (1 | Cmon_PlotID)
+  + Landgebruik
+  + Protocol2
+  + Landgebruik:Protocol2
+  + (1 | Locatie)
   )
 
-m_annelida_richness <- glmmTMB::glmmTMB(
-  formula = form_annelida_richness,
+m_insecta_richness <- glmmTMB::glmmTMB(
+  formula = form_insecta_richness,
   data = samples_totcount_10k,
   family = glmmTMB::nbinom2())
 ```
@@ -327,25 +348,25 @@ Er lijkt vooral overdispersie (variabiliteit groter dan verwacht) te zijn bij gr
 
 
 ```{r}
-performance::check_model(m_annelida_richness)
+performance::check_model(m_insecta_richness)
 ```
 
 
-```{r m-annelida-richness-summary}
-summary(m_annelida_richness)
+```{r m-insecta-richness-summary}
+summary(m_insecta_richness)
 ```
 
-```{r m-annelida-richness-anova}
-car::Anova(m_annelida_richness)
+```{r m-insecta-richness-anova}
+car::Anova(m_insecta_richness)
 ```
 
 Zoals te verwachten, is het belangrijk om te corrigeren voor het totaal aantal reads:
 
 ```{r}
 marginaleffects::plot_predictions(
-  m_annelida_richness,
+  m_insecta_richness,
   condition = c("total_count"),
-  vcov = vcov(m_annelida_richness)) +
+  vcov = vcov(m_insecta_richness)) +
   labs(y = "Voorspeld aantal taxa") +
   scale_x_log10()
 ```
@@ -353,11 +374,11 @@ marginaleffects::plot_predictions(
 
 We kunnen nu predicties maken van soortenrijkdom waarbij we controleren voor het totaal aantal reads in een staal:
 
-```{r m-annelida-richness-predictions}
+```{r m-insecta-richness-predictions}
 marginaleffects::plot_predictions(
-  m_annelida_richness,
-  condition = c("Landgebruik_ejp", "Diepte"),
-  vcov = vcov(m_annelida_richness),
+  m_insecta_richness,
+  condition = c("Landgebruik", "Protocol2"),
+  vcov = vcov(m_insecta_richness),
   re.form = NA,
   type = "response") +
   labs(y = "Voorspelde aantal taxa")
@@ -381,7 +402,7 @@ estimated_species_richness <- vegan::rarefy(
 
 
 true_rarefaction_results <- cbind(
-  sam_new %>% select(Cmon_PlotID, Diepte, Landgebruik_ejp),
+  sam_new %>% select(Naam, Protocol2, Landgebruik),
   est = estimated_species_richness["S", ],
   se = estimated_species_richness["se", ]) %>%
   as_tibble() %>%
@@ -402,9 +423,9 @@ library(brms)
 
 form_rarefaction <- bf(
   est | se(se, sigma = TRUE) ~
-  + Landgebruik_ejp
-  + Diepte
-  + Landgebruik_ejp:Diepte
+  + Landgebruik
+  + Protocol2
+  + Landgebruik:Protocol2
   + (1 | Cmon_PlotID)
 )
 
@@ -426,7 +447,7 @@ Dit model geeft gelijkaardige resultaten als het model waarbij we rechtstreeks w
 ```{r m-rarefied-predictions}
 conditional_effects(
   m_rarefaction,
-    effects = c("Landgebruik_ejp:Diepte"),
+    effects = c("Landgebruik:Protocol2"),
   re.form = NA)
 ```
 
@@ -521,8 +542,8 @@ bray_distance <- distance(physeq, method = "bray")
 pcoa_result <- ordinate(physeq, method = "PCoA", distance = "bray")
 
 # Create the ordination plot with color based on land_use and shape
-# based on diepte
+# based on Protocol2
 plot_ordination(physeq, pcoa_result, type = "samples",
-                color = "Landgebruik_ejp", shape = "Diepte") +
+                color = "Landgebruik", shape = "Protocol2") +
   theme_minimal()
 ```
