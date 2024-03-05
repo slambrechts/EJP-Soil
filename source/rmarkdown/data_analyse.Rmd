@@ -96,6 +96,9 @@ Filter taxongroep:
 
 ```{r even_depth}
 
+physeq <- subset_taxa(physeq, phylum != "Human")
+
+
 sample_sums <- sample_sums(physeq)
 
 getwd()
