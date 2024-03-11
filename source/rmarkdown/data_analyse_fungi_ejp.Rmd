@@ -555,6 +555,18 @@ tidy_physeq %>%
   kable()
 ```
 
+Overzicht van som van reads per species:
+
+```{r}
+tidy_physeq %>%
+  tidytacos::aggregate_taxa(rank = "species") %>%
+  tidytacos::everything() %>%
+  group_by(genus) %>%
+  summarise(read_counts = sum(count)) %>%
+  arrange(desc(read_counts)) %>%
+  kable()
+```
+
 ## Ordinatie
 
 ```{r physec-rarefied}
