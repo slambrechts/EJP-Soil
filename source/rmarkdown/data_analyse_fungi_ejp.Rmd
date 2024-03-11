@@ -237,7 +237,7 @@ tidy_physeq %>%
   tidytacos::tacoplot_venn(Protocol2)
 ```
 
-Unieke en gedeelde taxa per landgebruik:
+Unieke en gedeelde taxa per Land_use:
 
 ```{r}
 tidy_physeq %>%
@@ -251,17 +251,17 @@ tidy_physeq %>%
 
 ```{r}
 # Create a new combined column
-combined_column <- paste(sample_data(physeq_rarefied)$Landgebruik, sample_data(physeq_rarefied)$Protocol2, sep = "_")
+combined_column <- paste(sample_data(physeq_rarefied)$Land_use, sample_data(physeq_rarefied)$Protocol2, sep = "_")
 
 # Add the new combined column to the sample metadata with the desired name
-sample_data(physeq_rarefied)$Landgebruik_Protocol2 <- combined_column
+sample_data(physeq_rarefied)$Land_use_Protocol2 <- combined_column
 
 # Update the phyloseq object with the modified sample data
 physeq_rarefied <- merge_phyloseq(physeq_rarefied, sample_data(physeq_rarefied))
 
 
 if (system(command = "which ktImportText",  intern = FALSE, ignore.stderr = TRUE,  ignore.stdout = TRUE) != 1) {
-  psadd::plot_krona(physeq_rarefied, "ejp_Olig01_fungi_rar_Species_alle_stalen_Landgebruik_per_Protocol2", "Landgebruik_Protocol2", trim = T)
+  psadd::plot_krona(physeq_rarefied, "ejp_Olig01_fungi_rar_Species_alle_stalen_Land_use_per_Protocol2", "Land_use_Protocol2", trim = T)
 }
 
 
@@ -296,7 +296,7 @@ tidy_physeq$samples %>%
   labs(y = "Observed number of taxa")
 ```
 
-We fitten een model waarbij we de log van het totaal aantal reads in een staal als covariaat toevoegen samen met landgebruik en Protocol2 van het staal (de laatste twee in interactie).
+We fitten een model waarbij we de log van het totaal aantal reads in een staal als covariaat toevoegen samen met Land_use en Protocol2 van het staal (de laatste twee in interactie).
 We voegen ook een random intercept toe die aangeeft op welke locatie een staal werd genomen.
 Hiermee geven we aan dat stalen op verschillende Protocol2, maar dezelfde locatie, gecorreleerd zijn.
 Voor deze analyse, verwijderen we enkele stalen met een laag totaal aantal reads ($\leq 1e+4$).
@@ -310,9 +310,9 @@ samples_totcount_10k <- tidy_physeq$samples %>%
 form_fungi_richness <- formula(
   observed ~
     log(total_count)
-  + Landgebruik
+  + Land_use
   + Protocol2
-  + Landgebruik:Protocol2
+  + Land_use:Protocol2
   + (1 | Locatie)
   )
 
@@ -356,7 +356,7 @@ We kunnen nu predicties maken van soortenrijkdom waarbij we controleren voor het
 ```{r m-fungi-richness-predictions}
 marginaleffects::plot_predictions(
   m_fungi_richness,
-  condition = c("Landgebruik", "Protocol2"),
+  condition = c("Land_use", "Protocol2"),
   vcov = vcov(m_fungi_richness),
   re.form = NA,
   type = "response") +
@@ -381,7 +381,7 @@ estimated_Species_richness <- vegan::rarefy(
 
 
 true_rarefaction_results <- cbind(
-  sam_new %>% select(Naam, Protocol2, Landgebruik),
+  sam_new %>% select(Naam, Protocol2, Land_use),
   est = estimated_Species_richness["S", ],
   se = estimated_Species_richness["se", ]) %>%
   as_tibble() %>%
@@ -402,9 +402,9 @@ library(brms)
 
 form_rarefaction <- bf(
   est | se(se, sigma = TRUE) ~
-  + Landgebruik
+  + Land_use
   + Protocol2
-  + Landgebruik:Protocol2
+  + Land_use:Protocol2
   + (1 | Cmon_PlotID)
 )
 
@@ -426,7 +426,7 @@ Dit model geeft gelijkaardige resultaten als het model waarbij we rechtstreeks w
 ```{r m-rarefied-predictions}
 conditional_effects(
   m_rarefaction,
-    effects = c("Landgebruik:Protocol2"),
+    effects = c("Land_use:Protocol2"),
   re.form = NA)
 ```
 
@@ -596,6 +596,6 @@ pcoa_result <- ordinate(physeq, method = "PCoA", distance = "bray")
 # Create the ordination plot with color based on land_use and shape
 # based on Protocol2
 plot_ordination(physeq, pcoa_result, type = "samples",
-                color = "Landgebruik", shape = "Protocol2") +
+                color = "Land_use", shape = "Protocol2") +
   theme_minimal()
 ```
