@@ -155,7 +155,6 @@ tidy_physeq <- tidy_physeq %>%
 
 ```{r}
 physeq
-tidy_physeq
 ```
 
 
