@@ -86,11 +86,14 @@ Het bestand dat wordt ingelezen is `r basename(path_naar_bestand)`.
 ```{r hernoem-object}
 sample_sums(physeq_fungi_fungi)
 
-
-
 physeq <- physeq_fungi_fungi
 
 physeq
+
+physeq_known_species <- subset_taxa(physeq, !grepl("unidentified|\\?", tax_table(physeq)[, "Species"]))
+
+physeq_known_species
+
 
 ```
 
