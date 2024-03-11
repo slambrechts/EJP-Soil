@@ -70,7 +70,18 @@ path_naar_bestand <- file.path(
     "03_resultaten",
     "phyloseq",
     "inse01",
-    "physeq_Inse01.Rdata"
+    "physeq_Inse01_Arthropoda.Rdata"
+  )
+
+load(path_naar_bestand)
+
+path_naar_bestand <- file.path(
+    ejp_folder,
+    "Bodem_biodiversiteit",
+    "03_resultaten",
+    "phyloseq",
+    "inse01",
+    "physeq_Inse01_subset_species.Rdata"
   )
 
 load(path_naar_bestand)
@@ -83,8 +94,12 @@ Het bestand dat wordt ingelezen is `r basename(path_naar_bestand)`.
 <!--vergeet HIER niet te starten van de NIET-rarefied versie-->
 
 ```{r hernoem-object}
-physeq <- physeq_Inse01
-physeq
+sample_sums(physeq_Inse01_Arthropoda)
+sample_sums(physeq_insecta_subset.species)
+
+
+physeq <- physeq_insecta_subset.species
+physeq_full <- physeq_Inse01_Arthropoda
 ```
 
 
@@ -105,13 +120,6 @@ getwd()
 
 write.csv(sample_sums, file = "Inse01_full_sample_sums.csv")
 
-# Define the classes to keep
-classes_to_keep <- c("Insecta", "Arachnida", "Chilopoda", "Diplura", "Malacostraca")
-
-# Subset the phyloseq object to include only specified classes
-physeq_insecta <- subset_taxa(physeq, class %in% classes_to_keep)
-
-sample_sums <- sample_sums(physeq_insecta)
 
 
 physeq_rarefied <- rarefy_even_depth(physeq, sample.size = )
