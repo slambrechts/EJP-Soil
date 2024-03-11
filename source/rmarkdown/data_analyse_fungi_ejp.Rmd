@@ -88,6 +88,18 @@ sample_sums(physeq_fungi_fungi)
 
 physeq <- physeq_fungi_fungi
 
+taxa_sums <- taxa_sums(physeq)
+
+singletons <- names(taxa_sums[taxa_sums == 1])
+
+empty_otus <- names(taxa_sums[taxa_sums == 0])
+
+empty_otus
+
+singletons
+
+physeq_no_singletons <- prune_taxa(!(taxa_names(physeq) %in% singletons), physeq)
+
 physeq
 
 physeq_known_species <- subset_taxa(physeq, !grepl("unidentified|\\?", tax_table(physeq)[, "Species"]))
