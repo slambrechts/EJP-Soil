@@ -75,7 +75,7 @@ path_naar_bestand <- file.path(
 
 load(path_naar_bestand)
 
-path_naar_bestand <- file.path(
+path_naar_bestand2 <- file.path(
     ejp_folder,
     "Bodem_biodiversiteit",
     "03_resultaten",
@@ -84,10 +84,10 @@ path_naar_bestand <- file.path(
     "physeq_Inse01_subset_species.Rdata"
   )
 
-load(path_naar_bestand)
+load(path_naar_bestand2)
 ```
 
-Het bestand dat wordt ingelezen is `r basename(path_naar_bestand)`.
+Het bestand dat wordt ingelezen is `r basename(path_naar_bestand)` en `r basename(path_naar_bestand2)`.
 
 # Preprocessing stappen
 
@@ -100,6 +100,8 @@ sample_sums(physeq_insecta_subset.species)
 
 physeq <- physeq_insecta_subset.species
 physeq_full <- physeq_Inse01_Arthropoda
+
+sample_sums(physeq_full)
 ```
 
 
@@ -127,7 +129,7 @@ getwd()
 write.csv(sample_sums, file = "Inse01_full_sample_sums.csv")
 
 
-physeq_rarefied <- rarefy_even_depth(physeq, sample.size = )
+physeq_full_rarefied <- rarefy_even_depth(physeq_full, sample.size = 21550)
 
 ```
 
@@ -140,7 +142,7 @@ physeq_rarefied <- rarefy_even_depth(physeq, sample.size = )
 Voorbereidende stap: functies om een `phyloseq` object te converteren naar een `vegan matrix` of een `tidytacos` object.
 
 
-```{r psotu2veg-function}
+```{r physeq-to-vegan-physeq}
 psotu2veg <- function(physeq) {
   otu <- phyloseq::otu_table(physeq)
   if (phyloseq::taxa_are_rows(otu)) {
@@ -149,19 +151,29 @@ psotu2veg <- function(physeq) {
   return(as(otu, "matrix"))
 }
 
+veganobject <- psotu2veg(physeq)
+
 ```
 
 
-```{r convert-to-vegan-matrix}
-veganobject <- psotu2veg(physeq)
+```{r physeq-to-vegan-physeq-full}
+psotu2veg <- function(physeq_full) {
+  otu <- phyloseq::otu_table(physeq_full)
+  if (phyloseq::taxa_are_rows(otu)) {
+    otu <- t(otu)
+  }
+  return(as(otu, "matrix"))
+}
+
+veganobject_physeq_full <- psotu2veg(physeq_full)
 ```
 
 ```{r convert-tidytacos}
-tidy_physeq <- tidytacos::from_phyloseq(physeq)
+tidy_physeq <- tidytacos::from_phyloseq(physeq_full)
 
-tidy_physeq_insecta <- tidytacos::from_phyloseq(physeq_insecta)
+tidy_physeq_insecta <- tidytacos::from_phyloseq(physeq)
 
-tidy_physeq_rarefied <- tidytacos::from_phyloseq(physeq_rarefied)
+tidy_physeq_rarefied <- tidytacos::from_phyloseq(physeq_full_rarefied)
 
 tidy_physeq <- tidy_physeq %>%
   remove_empty_samples() %>%
@@ -194,6 +206,10 @@ tidy_physeq_rarefied <- tidy_physeq_rarefied %>%
 
 ```{r}
 physeq
+
+physeq_full
+
+physeq_full_rarefied
 ```
 
 
