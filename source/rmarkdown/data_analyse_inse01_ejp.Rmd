@@ -94,16 +94,26 @@ Het bestand dat wordt ingelezen is `r basename(path_naar_bestand)` en `r basenam
 <!--vergeet HIER niet te starten van de NIET-rarefied versie-->
 
 ```{r hernoem-object}
-sample_sums(physeq_Inse01_Arthropoda)
-sample_sums(physeq_insecta_subset.species)
-
 
 physeq <- physeq_insecta_subset.species
 physeq_full <- physeq_Inse01_Arthropoda
 
-sample_sums(physeq_full)
 ```
 
+```{r sample-sums-inse01-full}
+sample_sums(inse01_full)
+
+```
+
+```{r sample-sums-arthropoda-full}
+sample_sums(physeq_full)
+
+```
+
+```{r sample-sums2-insecta-subset}
+sample_sums(physeq)
+
+```
 
 ## Filter en selectie stappen
 
