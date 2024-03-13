@@ -823,8 +823,22 @@ tidy_physeq_insecta %>%
 
 ## Ordinatie
 
-
 ```{r ordination-phyloseq}
+
+# Perform PCoA
+pcoa_result <- ordinate(physeq_full_rarefied, method = "PCoA", distance = "bray")
+
+# Create the ordination plot with color based on land_use and shape
+# based on Protocol2
+plot_ordination(physeq_full_rarefied, pcoa_result, type = "samples",
+                color = "Locatie") +
+  theme_minimal()
+```
+
+
+```{r ordination-phyloseq-CLR}
+
+# Hier is duidelijk iets fout gegaan, komt niet overeen met ordinatie plots uit shiny phyloseq
 
 # Perform CLR transformation
 clr_physeq_rarefied <- microbiome::transform(physeq_full_rarefied, "clr")
@@ -838,6 +852,6 @@ pcoa_result <- ordinate(clr_physeq_rarefied, method = "PCoA", distance = "bray")
 # Create the ordination plot with color based on land_use and shape
 # based on Protocol2
 plot_ordination(clr_physeq_rarefied, pcoa_result, type = "samples",
-                color = "Landgebruik", shape = "Protocol2") +
+                color = "Locatie") +
   theme_minimal()
 ```
