@@ -150,6 +150,12 @@ sample_sums <- sample_sums(physeq_full)
 write.csv(sample_sums, file = "Inse01_arthropoda_full_sample_sums.csv")
 
 
+sample_sums <- sample_sums(physeq_Inse01)
+
+write.csv(sample_sums, file = "Inse01_full_incl_Annelida_sample_sums.csv")
+
+
+
 physeq_full_rarefied <- rarefy_even_depth(physeq_full, sample.size = 12057)
 
 ```
@@ -277,6 +283,8 @@ physeq
 glimpse(sample_data(physeq) %>% as_tibble())
 ```
 
+Kijken of sample data in nederlands of engels staat (om namen te weten variabelen voor analyse hieronder)
+
 Check totaal aantal reads (hier de decielen van 0% = minimum tot 100% = maximum):
 
 ```{r quantiles-reads}
@@ -313,6 +321,8 @@ tidy_physeq$samples %>%
 De meeste 0-10 cm en 10-30 cm stalen zijn van dezelfde locatie.
 Met deze gepaardheid moeten we rekening houden in analyses.
 
+Vergeet niet Gontrode, Deurne en Herentals te verwijderen voor de staalname protocol vergelijkingen
+
 
 ## OTU tabel
 
@@ -331,7 +341,7 @@ glimpse(tax_table(physeq) %>% as.data.frame %>% as_tibble())
 
 ```{r GBIF-check-presence}
 
-species <- as.vector(tax_table(physeq_insecta)[, "species"])
+species <- as.vector(tax_table(physeq)[, "species"])
 species <- species[!grepl("_otu", species)]
 species <- gsub("_", " ", species)
 source(here::here("source/r/check_presence.R"))
@@ -341,44 +351,62 @@ filter(!present) %>%
   kable(caption = "Not present according to GBIF in Western-Europe")
 ```
 
-Unieke en gedeelde taxa per Protocol2 over heel de dataset:
+Unieke en gedeelde taxa per locatie:
 
-```{r}
-tidy_physeq_insecta %>%
-  tidytacos::tacoplot_venn(Protocol2)
+Silke kan jij dit deeltje aanvullen op basis van de code die je gebruikt hebt voor de Venn diagrammen:
+
+```{r detectie-otus-staalname-protocol}
+insert Code Venn diagrammen per locatie
+
+start met phyloseq object: physeq_full_rarefied
+
+en verwijder dan eerst Deurne, Herentals, Gontrode en de strooisel stalen
 ```
 
 Unieke en gedeelde taxa per landgebruik:
 
-```{r}
+```{r venn-land-use-insects-sl-subset-non-rarefied}
 tidy_physeq_insecta %>%
   tidytacos::tacoplot_venn(Landgebruik)
 ```
 
-```{r}
-tidy_physeq %>%
-  tidytacos::tacoplot_stack()
+```{r venn-land-use-arthropoda-rarefied-subset}
+tidy_physeq_rarefied %>%
+  tidytacos::tacoplot_venn(Landgebruik)
 ```
 
+```{r venn-land-use-arthropoda-non-rarefied}
+tidy_physeq %>%
+  tidytacos::tacoplot_venn(Landgebruik)
+```
+
+
 ```{r}
+tidy_physeq_insecta %>%
+  tidytacos::tacoplot_stack()
+```
+Hiervoor gebruiken we beter de Krona charts
+
+```{r poging-krona-chart}
 # Create a new combined column
-combined_column <- paste(sample_data(physeq_rarefied)$Landgebruik, sample_data(physeq_rarefied)$Protocol2, sep = "_")
+combined_column <- paste(sample_data(physeq)$Landgebruik, sample_data(physeq)$Protocol2, sep = "_")
 
 # Add the new combined column to the sample metadata with the desired name
-sample_data(physeq_rarefied)$Landgebruik_Protocol2 <- combined_column
+sample_data(physeq)$Landgebruik_Protocol2 <- combined_column
 
 # Update the phyloseq object with the modified sample data
-physeq_rarefied <- merge_phyloseq(physeq_rarefied, sample_data(physeq_rarefied))
+physeq <- merge_phyloseq(physeq, sample_data(physeq))
 
 
 if (system(command = "which ktImportText",  intern = FALSE, ignore.stderr = TRUE,  ignore.stdout = TRUE) != 1) {
-  psadd::plot_krona(physeq_rarefied, "ejp_Olig01_insecta_rar_species_alle_stalen_Landgebruik_per_Protocol2", "Landgebruik_Protocol2", trim = T)
+  psadd::plot_krona(physeq, "ejp_Olig01_insecta_rar_species_alle_stalen_Landgebruik_per_Protocol2", "Landgebruik_Protocol2", trim = T)
 }
 
 
 
 ```
 
+onderstaande bar plots nog aan te passen
 
 ```{r}
 tidy_physeq %>%
@@ -414,7 +442,7 @@ Voor deze analyse, verwijderen we enkele stalen met een laag totaal aantal reads
 
 We modelleren de soortenrijkdom als een Negatief Binomiaal model omdat we verwachten dat deze data overdispersie vertonen ten opzichte van een Poisson verdeling (waar de veronderstelling is dat de variantie gelijk aan het gemiddelde).
 
-```{r m-inse01-richness}
+```{r m-inse01-arthropoda-richness}
 samples_totcount_10k <- tidy_physeq$samples %>%
   filter(total_count > 1e+4)
 
@@ -481,12 +509,12 @@ Dit is een alternatief voor voorgaande analyse.
 Schatting van de soortenrijkdom via rarefaction analyse.
 
 ```{r rarefaction}
-sam_new <- data.frame(sample_data(physeq))
+sam_new <- data.frame(sample_data(physeq_full))
 
 
 estimated_species_richness <- vegan::rarefy(
-  veganobject,
-  30780,
+  veganobject_physeq_full,
+  12057,
   se = TRUE,
   MARGIN = 1)
 
@@ -547,11 +575,12 @@ per phylum
 
 ```{r per-phylum}
 # Count OTUs per Phylum
-tax_table(physeq) %>%
+tax_table(physeq_Inse01) %>%
   as.data.frame() %>%
   as_tibble() %>%
   group_by(phylum) %>%
   summarise(OTU_Count = n()) %>%
+  arrange(desc(OTU_Count)) %>%
   kable()
 ```
 
@@ -560,11 +589,12 @@ per class
 
 ```{r per-class}
 # Count OTUs per Class
-tax_table(physeq) %>%
+tax_table(physeq_Inse01) %>%
   as.data.frame() %>%
   as_tibble() %>%
   group_by(class) %>%
   summarise(OTU_Count = n()) %>%
+  arrange(desc(OTU_Count)) %>%
   kable()
 ```
 
@@ -578,6 +608,7 @@ tax_table(physeq) %>%
   as_tibble() %>%
   group_by(order) %>%
   summarise(OTU_Count = n()) %>%
+  arrange(desc(OTU_Count)) %>%
   kable()
 ```
 
@@ -590,6 +621,7 @@ tax_table(physeq) %>%
   as_tibble() %>%
   group_by(family) %>%
   summarise(OTU_Count = n()) %>%
+  arrange(desc(OTU_Count)) %>%
   kable()
 ```
 
@@ -613,6 +645,7 @@ tax_table(physeq) %>%
   group_by(species) %>%
   summarise(OTU_Count = n()) %>%
   filter(OTU_Count > 1) %>%
+  arrange(desc(OTU_Count)) %>%
   kable()
 ```
 
@@ -622,7 +655,7 @@ tax_table(physeq) %>%
 Overzicht van som van reads per phylum:
 
 ```{r}
-tidy_physeq %>%
+tidy_physeq_inse01 %>%
   tidytacos::aggregate_taxa(rank = "phylum") %>%
   tidytacos::everything() %>%
   group_by(phylum) %>%
@@ -634,7 +667,7 @@ tidy_physeq %>%
 Overzicht van som van reads per class:
 
 ```{r}
-tidy_physeq %>%
+tidy_physeq_inse01 %>%
   tidytacos::aggregate_taxa(rank = "class") %>%
   tidytacos::everything() %>%
   group_by(class) %>%
