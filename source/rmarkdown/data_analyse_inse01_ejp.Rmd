@@ -147,10 +147,20 @@ sample_sums(physeq)
 
 Filter taxongroep:
 
-```{r even_depth}
-
+```{r delete-ongewenste-taxa}
+physeq <- subset_taxa(physeq, phylum != "Human")
+physeq_full <- subset_taxa(physeq_full, phylum != "Human")
 physeq_Inse01 <- subset_taxa(physeq_Inse01, phylum != "Human")
 
+physeq <- subset_taxa(physeq, phylum != "Unknown")
+physeq_full <- subset_taxa(physeq_full, phylum != "Unknown")
+physeq_Inse01 <- subset_taxa(physeq_Inse01, phylum != "Unknown")
+
+```
+
+rarefied
+
+```{r even-depth}
 
 sample_sums <- sample_sums(physeq)
 
@@ -334,7 +344,7 @@ tidy_physeq$samples %>%
 De meeste 0-10 cm en 10-30 cm stalen zijn van dezelfde locatie.
 Met deze gepaardheid moeten we rekening houden in analyses.
 
-Vergeet niet Gontrode, Deurne en Herentals te verwijderen voor de staalname protocol vergelijkingen
+Vergeet niet Deurne en Herentals te verwijderen voor de staalname protocol vergelijkingen
 
 
 ## OTU tabel
@@ -377,6 +387,8 @@ en verwijder dan eerst Deurne, Herentals, Gontrode en de strooisel stalen
 ```
 
 Unieke en gedeelde taxa per landgebruik:
+
+Aantal unieke OTUs was nog veel hoger voor bos toen Gontrode en de strooiselstalen nog in de dataset zaten (strooisel zit als landgebruik 'Bos' in de dataset)
 
 ```{r venn-land-use-insects-sl-subset-non-rarefied}
 tidy_physeq_insecta %>%
@@ -624,6 +636,7 @@ tax_table(physeq) %>%
   arrange(desc(OTU_Count)) %>%
   kable()
 ```
+Dat zijn dus het aantal Arthropoda OTUs gekend tot op klasse niveau (zonder de Collembola)
 
 
 per class insecta sl subset
@@ -694,27 +707,36 @@ tax_table(physeq) %>%
 
 Overzicht van som van reads per phylum:
 
+
 ```{r}
+
 tidy_physeq_inse01 %>%
   tidytacos::aggregate_taxa(rank = "phylum") %>%
   tidytacos::everything() %>%
   group_by(phylum) %>%
   summarise(read_counts = sum(count)) %>%
+  mutate(percentage = round((read_counts / sum(read_counts)) * 100, 1)) %>% # Round to 2 decimal places
   arrange(desc(read_counts)) %>%
+  select(phylum, percentage) %>% # Keep only necessary columns if desired
   kable()
 ```
 
 Overzicht van som van reads per class:
 
+
 ```{r}
+
 tidy_physeq_inse01 %>%
   tidytacos::aggregate_taxa(rank = "class") %>%
   tidytacos::everything() %>%
   group_by(class) %>%
   summarise(read_counts = sum(count)) %>%
+  mutate(percentage = round((read_counts / sum(read_counts)) * 100, 2)) %>% # Calculate and round percentage
   arrange(desc(read_counts)) %>%
+  select(class, percentage) %>% # Keep only necessary columns if desired
   kable()
 ```
+
 
 Overzicht van som van reads per phylum insecta sl subset:
 
@@ -740,10 +762,22 @@ tidy_physeq_insecta %>%
   kable()
 ```
 
+Overzicht van som van reads per orde:
+
+```{r}
+tidy_physeq_insecta %>%
+  tidytacos::aggregate_taxa(rank = "order") %>%
+  tidytacos::everything() %>%
+  group_by(order) %>%
+  summarise(read_counts = sum(count)) %>%
+  arrange(desc(read_counts)) %>%
+  kable()
+```
+
 Overzicht van som van reads per family:
 
 ```{r}
-tidy_physeq %>%
+tidy_physeq_insecta %>%
   tidytacos::aggregate_taxa(rank = "family") %>%
   tidytacos::everything() %>%
   group_by(family) %>%
@@ -755,10 +789,22 @@ tidy_physeq %>%
 Overzicht van som van reads per genus:
 
 ```{r}
-tidy_physeq %>%
+tidy_physeq_insecta %>%
   tidytacos::aggregate_taxa(rank = "genus") %>%
   tidytacos::everything() %>%
   group_by(genus) %>%
+  summarise(read_counts = sum(count)) %>%
+  arrange(desc(read_counts)) %>%
+  kable()
+```
+
+Overzicht van som van reads per species:
+
+```{r}
+tidy_physeq_insecta %>%
+  tidytacos::aggregate_taxa(rank = "species") %>%
+  tidytacos::everything() %>%
+  group_by(species) %>%
   summarise(read_counts = sum(count)) %>%
   arrange(desc(read_counts)) %>%
   kable()
