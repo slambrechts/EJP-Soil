@@ -104,10 +104,23 @@ Het bestand dat wordt ingelezen is `r basename(path_naar_bestand)` en `r basenam
 
 <!--vergeet HIER niet te starten van de NIET-rarefied versie-->
 
-```{r hernoem-object}
+verwijder Gontrode, strooiselstalen, en replicaten
+
+```{r hernoem-objecten-en-filter-ongewenste-stalen}
 
 physeq <- physeq_insecta_subset.species
 physeq_full <- physeq_Inse01_Arthropoda
+physeq_Inse01 <- physeq_Inse01
+
+physeq <- subset_samples_no_zero(physeq, Locatie != "Gontrode")
+physeq_full <- subset_samples_no_zero(physeq_full, Locatie != "Gontrode")
+physeq_Inse01 <- subset_samples_no_zero(physeq_Inse01, Locatie != "Gontrode")
+
+physeq <- subset_samples_no_zero(physeq, Protocol2 != "strooisel")
+physeq_full <- subset_samples_no_zero(physeq_full, Protocol2 != "strooisel")
+physeq_Inse01 <- subset_samples_no_zero(physeq_Inse01, Protocol2 != "strooisel")
+
+
 
 ```
 
@@ -154,7 +167,7 @@ sample_sums <- sample_sums(physeq_Inse01)
 
 write.csv(sample_sums, file = "Inse01_full_incl_Annelida_sample_sums.csv")
 
-
+getwd()
 
 physeq_full_rarefied <- rarefy_even_depth(physeq_full, sample.size = 12057)
 
@@ -706,7 +719,7 @@ tidy_physeq_inse01 %>%
 Overzicht van som van reads per phylum insecta sl subset:
 
 ```{r}
-tidy_physeq_inse01 %>%
+tidy_physeq_insecta %>%
   tidytacos::aggregate_taxa(rank = "phylum") %>%
   tidytacos::everything() %>%
   group_by(phylum) %>%
@@ -718,7 +731,7 @@ tidy_physeq_inse01 %>%
 Overzicht van som van reads per class insecta sl subset:
 
 ```{r}
-tidy_physeq_inse01 %>%
+tidy_physeq_insecta %>%
   tidytacos::aggregate_taxa(rank = "class") %>%
   tidytacos::everything() %>%
   group_by(class) %>%
