@@ -758,7 +758,9 @@ tidy_physeq_insecta %>%
   tidytacos::everything() %>%
   group_by(class) %>%
   summarise(read_counts = sum(count)) %>%
+  mutate(percentage = round((read_counts / sum(read_counts)) * 100, 2)) %>% # Calculate and round percentage
   arrange(desc(read_counts)) %>%
+  select(class, percentage) %>% # Keep only necessary columns if desired
   kable()
 ```
 
@@ -770,7 +772,9 @@ tidy_physeq_insecta %>%
   tidytacos::everything() %>%
   group_by(order) %>%
   summarise(read_counts = sum(count)) %>%
+  mutate(percentage = round((read_counts / sum(read_counts)) * 100, 2)) %>% # Calculate and round percentage
   arrange(desc(read_counts)) %>%
+  select(order, percentage) %>% # Keep only necessary columns if desired
   kable()
 ```
 
@@ -782,7 +786,9 @@ tidy_physeq_insecta %>%
   tidytacos::everything() %>%
   group_by(family) %>%
   summarise(read_counts = sum(count)) %>%
+  mutate(percentage = round((read_counts / sum(read_counts)) * 100, 2)) %>% # Calculate and round percentage
   arrange(desc(read_counts)) %>%
+  select(family, percentage) %>% # Keep only necessary columns if desired
   kable()
 ```
 
@@ -794,7 +800,9 @@ tidy_physeq_insecta %>%
   tidytacos::everything() %>%
   group_by(genus) %>%
   summarise(read_counts = sum(count)) %>%
+  mutate(percentage = round((read_counts / sum(read_counts)) * 100, 2)) %>% # Calculate and round percentage
   arrange(desc(read_counts)) %>%
+  select(genus, percentage) %>% # Keep only necessary columns if desired
   kable()
 ```
 
@@ -806,18 +814,17 @@ tidy_physeq_insecta %>%
   tidytacos::everything() %>%
   group_by(species) %>%
   summarise(read_counts = sum(count)) %>%
+  mutate(percentage = round((read_counts / sum(read_counts)) * 100, 2)) %>% # Calculate and round percentage
   arrange(desc(read_counts)) %>%
+  select(species, percentage) %>% # Keep only necessary columns if desired
   kable()
 ```
 
 ## Ordinatie
 
-```{r physec-rarefied}
 
-```
-
-```{r ordination-vegan}
-ordmat <- psotu2veg(physeq_rarefied)
+```{r ordination-vegan eval=FALSE}
+ordmat <- psotu2veg(physeq_full_rarefied)
 
 all(colSums(ordmat) > 0)
 all(rowSums(ordmat) > 0)
@@ -825,7 +832,7 @@ all(ordmat >= 0)
 
 ordmat <- decostand(ordmat, method = "rclr")
 
-samples <- sample_data(physeq_rarefied) %>%
+samples <- sample_data(physeq_full_rarefied) %>%
   as.data.frame() %>%
   as_tibble()
 
@@ -837,19 +844,19 @@ biplot(rda)
 ```
 
 
-```{r eval=FALSE}
+```{r ordination-phyloseq eval=FALSE}
 # Perform CLR transformation
-clr_physeq_rarefied <- transform(physeq_rarefied, "clr")
+clr_physeq_rarefied <- transform(physeq_full_rarefied, "clr")
 
 # Calculate Bray distance matrix based on the CLR-transformed data
-bray_distance <- distance(physeq, method = "bray")
+bray_distance <- distance(clr_physeq_rarefied, method = "bray")
 
 # Perform PCoA
-pcoa_result <- ordinate(physeq, method = "PCoA", distance = "bray")
+pcoa_result <- ordinate(clr_physeq_rarefied, method = "PCoA", distance = "bray")
 
 # Create the ordination plot with color based on land_use and shape
 # based on Protocol2
-plot_ordination(physeq, pcoa_result, type = "samples",
+plot_ordination(clr_physeq_rarefied, pcoa_result, type = "samples",
                 color = "Landgebruik", shape = "Protocol2") +
   theme_minimal()
 ```
