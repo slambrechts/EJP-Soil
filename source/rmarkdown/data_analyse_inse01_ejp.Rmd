@@ -577,7 +577,7 @@ form_rarefaction <- bf(
   + Landgebruik
   + Protocol2
   + Landgebruik:Protocol2
-  + (1 | Cmon_PlotID)
+  + (1 | Naam)
 )
 
 m_rarefaction <- brm(
