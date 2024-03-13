@@ -379,7 +379,7 @@ Unieke en gedeelde taxa per locatie:
 
 Silke kan jij dit deeltje aanvullen op basis van de code die je gebruikt hebt voor de Venn diagrammen:
 
-```{r detectie-otus-staalname-protocol Eval=False}
+```{r detectie-otus-staalname-protocol, eval=FALSE}
 insert Code Venn diagrammen per locatie
 
 start met phyloseq object: physeq_full_rarefied
@@ -413,7 +413,7 @@ tidy_physeq_insecta %>%
 ```
 Hiervoor gebruiken we beter de Krona charts
 
-```{r poging-krona-chart Eval=False}
+```{r poging-krona-chart, eval=FALSE}
 # integratie Krona werkt nog niet, installatie probleem
 
 # Create a new combined column
@@ -436,14 +436,14 @@ if (system(command = "which ktImportText",  intern = FALSE, ignore.stderr = TRUE
 
 onderstaande bar plots nog aan te passen
 
-```{r Eval=False}
+```{r eval=FALSE}
 # werkt nog niet
 
 tidy_physeq %>%
   tidytacos::tacoplot_stack(x = Landgebruik)
 ```
 
-```{r Eval=False}
+```{r eval=FALSE}
 
 # werkt nog niet
 
@@ -475,7 +475,7 @@ Voor deze analyse, verwijderen we enkele stalen met een laag totaal aantal reads
 
 We modelleren de soortenrijkdom als een Negatief Binomiaal model omdat we verwachten dat deze data overdispersie vertonen ten opzichte van een Poisson verdeling (waar de veronderstelling is dat de variantie gelijk aan het gemiddelde).
 
-```{r m-inse01-arthropoda-richness}
+```{r m-inse01-arthropoda-richness, eval=FALSE}
 samples_totcount_10k <- tidy_physeq$samples %>%
   filter(total_count > 1e+4)
 
