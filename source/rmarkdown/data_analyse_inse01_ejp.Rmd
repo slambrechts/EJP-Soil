@@ -124,7 +124,7 @@ physeq_Inse01 <- subset_samples_no_zero(physeq_Inse01, Protocol2 != "strooisel")
 
 ```
 
-physeq is de subset van de 5 klassen Insecta, Arachnida, Chilopoda, Diplura, en Malacostraca. physeq full is alles van Arthropoda. Physeq inse01 zijn alle OTUs die gerecupereerd zijn met de inse01 primerset, inclusief de ongewenste bijvangst zoals Annelida 
+physeq is een subset van de data, en bevat namelijk enkel de volgende 5 klassen: Insecta, Arachnida, Chilopoda, Diplura, en Malacostraca. physeq full is alles van Arthropoda. Physeq inse01 zijn alle OTUs die gerecupereerd zijn met de inse01 primerset, inclusief de ongewenste bijvangst zoals Annelida. physeq full is dus een subset van physeq inse01, en physeq is dus een verdere subset van physeq full. 
 
 ```{r sample-sums-inse01-full}
 sample_sums(physeq_Inse01)
