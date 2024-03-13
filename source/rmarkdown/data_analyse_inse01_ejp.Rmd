@@ -70,7 +70,7 @@ path_naar_bestand <- file.path(
     "03_resultaten",
     "phyloseq",
     "inse01",
-    "physeq_Inse01_Arthropoda.Rdata"
+    "physeq_Inse01.Rdata"
   )
 
 load(path_naar_bestand)
@@ -81,13 +81,24 @@ path_naar_bestand2 <- file.path(
     "03_resultaten",
     "phyloseq",
     "inse01",
-    "physeq_Inse01_subset_species.Rdata"
+    "physeq_Inse01_Arthropoda.Rdata"
   )
 
 load(path_naar_bestand2)
+
+path_naar_bestand3 <- file.path(
+    ejp_folder,
+    "Bodem_biodiversiteit",
+    "03_resultaten",
+    "phyloseq",
+    "inse01",
+    "physeq_Inse01_subset_species.Rdata"
+  )
+
+load(path_naar_bestand3)
 ```
 
-Het bestand dat wordt ingelezen is `r basename(path_naar_bestand)` en `r basename(path_naar_bestand2)`.
+Het bestand dat wordt ingelezen is `r basename(path_naar_bestand)` en `r basename(path_naar_bestand2)` en `r basename(path_naar_bestand3)`.
 
 # Preprocessing stappen
 
@@ -100,8 +111,10 @@ physeq_full <- physeq_Inse01_Arthropoda
 
 ```
 
+physeq is de subset van de 5 klassen Insecta, Arachnida, Chilopoda, Diplura, en Malacostraca. physeq full is alles van Arthropoda. Physeq inse01 zijn alle OTUs die gerecupereerd zijn met de inse01 primerset, inclusief de ongewenste bijvangst zoals Annelida 
+
 ```{r sample-sums-inse01-full}
-sample_sums(inse01_full)
+sample_sums(physeq_Inse01)
 
 ```
 
@@ -123,23 +136,21 @@ Filter taxongroep:
 
 ```{r even_depth}
 
-physeq <- subset_taxa(physeq, phylum != "Human")
+physeq_Inse01 <- subset_taxa(physeq_Inse01, phylum != "Human")
 
 
 sample_sums <- sample_sums(physeq)
 
-getwd()
 
 write.csv(sample_sums, file = "Inse01_subset_sample_sums.csv")
 
 sample_sums <- sample_sums(physeq_full)
 
-getwd()
 
-write.csv(sample_sums, file = "Inse01_full_sample_sums.csv")
+write.csv(sample_sums, file = "Inse01_arthropoda_full_sample_sums.csv")
 
 
-physeq_full_rarefied <- rarefy_even_depth(physeq_full, sample.size = 21550)
+physeq_full_rarefied <- rarefy_even_depth(physeq_full, sample.size = 12057)
 
 ```
 
@@ -178,12 +189,39 @@ psotu2veg <- function(physeq_full) {
 veganobject_physeq_full <- psotu2veg(physeq_full)
 ```
 
+```{r physeq-to-vegan-physeq-inse01}
+psotu2veg <- function(physeq_Inse01) {
+  otu <- phyloseq::otu_table(physeq_Inse01)
+  if (phyloseq::taxa_are_rows(otu)) {
+    otu <- t(otu)
+  }
+  return(as(otu, "matrix"))
+}
+
+veganobject_physeq_inse01 <- psotu2veg(physeq_Inse01)
+```
+
+
+
 ```{r convert-tidytacos}
+tidy_physeq_inse01 <- tidytacos::from_phyloseq(physeq_Inse01)
+
+
 tidy_physeq <- tidytacos::from_phyloseq(physeq_full)
 
 tidy_physeq_insecta <- tidytacos::from_phyloseq(physeq)
 
 tidy_physeq_rarefied <- tidytacos::from_phyloseq(physeq_full_rarefied)
+
+
+tidy_physeq_inse01 <- tidy_physeq_inse01 %>%
+  remove_empty_samples() %>%
+  tidytacos::set_rank_names(
+    rank_names = c("phylum", "class", "order", "family", "genus", "species")
+  ) %>%
+  tidytacos::add_alpha() %>%
+  tidytacos::add_total_count()
+
 
 tidy_physeq <- tidy_physeq %>%
   remove_empty_samples() %>%
@@ -213,14 +251,24 @@ tidy_physeq_rarefied <- tidy_physeq_rarefied %>%
 
 
 # Verkennende analyses
+```{r}
+physeq_Inse01
+```
+
+```{r}
+physeq_full
+```
+
+```{r}
+physeq_full_rarefied
+```
 
 ```{r}
 physeq
-
-physeq_full
-
-physeq_full_rarefied
 ```
+
+
+
 
 
 ## Sample data
