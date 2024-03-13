@@ -843,7 +843,7 @@ plot_ordination(physeq_full_rarefied, pcoa_result, type = "samples",
 ```
 
 
-```{r ordination-phyloseq-CLR}
+```{r ordination-phyloseq-CLR, eval=FALSE}
 
 # Hier is duidelijk iets fout gegaan, komt niet overeen met ordinatie plots uit shiny phyloseq
 
