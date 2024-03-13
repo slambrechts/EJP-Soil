@@ -503,11 +503,11 @@ performance::check_model(m_insecta_richness)
 ```
 
 
-```{r m-insecta-richness-summary eval=FALSE}
+```{r m-insecta-richness-summary, eval=FALSE}
 summary(m_insecta_richness)
 ```
 
-```{r m-insecta-richness-anova eval=FALSE}
+```{r m-insecta-richness-anova, eval=FALSE}
 car::Anova(m_insecta_richness)
 ```
 
@@ -525,7 +525,7 @@ marginaleffects::plot_predictions(
 
 We kunnen nu predicties maken van soortenrijkdom waarbij we controleren voor het totaal aantal reads in een staal:
 
-```{r m-insecta-richness-predictions eval=FALSE}
+```{r m-insecta-richness-predictions, eval=FALSE}
 marginaleffects::plot_predictions(
   m_insecta_richness,
   condition = c("Landgebruik", "Protocol2"),
