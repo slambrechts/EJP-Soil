@@ -51,6 +51,7 @@ library(tidytacos)
 library(glmmTMB)
 library(marginaleffects)
 library(performance)
+library(microbiome)
 
 ejp_folder <- "G:/Gedeelde drives/PRJ_EJP-Soil" # nolint
 ```
@@ -823,33 +824,13 @@ tidy_physeq_insecta %>%
 ## Ordinatie
 
 
-```{r ordination-vegan eval=FALSE}
-ordmat <- psotu2veg(physeq_full_rarefied)
+```{r ordination-phyloseq}
 
-all(colSums(ordmat) > 0)
-all(rowSums(ordmat) > 0)
-all(ordmat >= 0)
-
-ordmat <- decostand(ordmat, method = "rclr")
-
-samples <- sample_data(physeq_full_rarefied) %>%
-  as.data.frame() %>%
-  as_tibble()
-
-rda <- rda(ordmat)
-
-biplot(rda)
-
-
-```
-
-
-```{r ordination-phyloseq eval=FALSE}
 # Perform CLR transformation
-clr_physeq_rarefied <- transform(physeq_full_rarefied, "clr")
+clr_physeq_rarefied <- microbiome::transform(physeq_full_rarefied, "clr")
 
 # Calculate Bray distance matrix based on the CLR-transformed data
-bray_distance <- distance(clr_physeq_rarefied, method = "bray")
+bray_distance <- phyloseq::distance(clr_physeq_rarefied, method = "bray")
 
 # Perform PCoA
 pcoa_result <- ordinate(clr_physeq_rarefied, method = "PCoA", distance = "bray")
