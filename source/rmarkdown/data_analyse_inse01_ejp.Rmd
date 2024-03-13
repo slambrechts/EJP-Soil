@@ -498,22 +498,22 @@ Model validatie toont dat er problemen zijn met de residuele variabiliteit.
 Er lijkt vooral overdispersie (variabiliteit groter dan verwacht) te zijn bij grote waarden van de soortenrijkdom.
 
 
-```{r}
+```{r eval=FALSE}
 performance::check_model(m_insecta_richness)
 ```
 
 
-```{r m-insecta-richness-summary}
+```{r m-insecta-richness-summary eval=FALSE}
 summary(m_insecta_richness)
 ```
 
-```{r m-insecta-richness-anova}
+```{r m-insecta-richness-anova eval=FALSE}
 car::Anova(m_insecta_richness)
 ```
 
 Zoals te verwachten, is het belangrijk om te corrigeren voor het totaal aantal reads:
 
-```{r}
+```{r eval=FALSE}
 marginaleffects::plot_predictions(
   m_insecta_richness,
   condition = c("total_count"),
@@ -525,7 +525,7 @@ marginaleffects::plot_predictions(
 
 We kunnen nu predicties maken van soortenrijkdom waarbij we controleren voor het totaal aantal reads in een staal:
 
-```{r m-insecta-richness-predictions}
+```{r m-insecta-richness-predictions eval=FALSE}
 marginaleffects::plot_predictions(
   m_insecta_richness,
   condition = c("Landgebruik", "Protocol2"),
@@ -606,7 +606,7 @@ conditional_effects(
 
 per phylum full primerset data
 
-```{r per-phylum}
+```{r per-phylum-full-primerset}
 # Count OTUs per Phylum
 tax_table(physeq_Inse01) %>%
   as.data.frame() %>%
@@ -620,7 +620,7 @@ tax_table(physeq_Inse01) %>%
 
 per class full primerset data
 
-```{r per-class}
+```{r per-class-full-primerset}
 # Count OTUs per Class
 tax_table(physeq_Inse01) %>%
   as.data.frame() %>%
@@ -634,7 +634,7 @@ tax_table(physeq_Inse01) %>%
 
 per phylum insecta sl subset
 
-```{r per-phylum}
+```{r per-phylum-insecta-sl}
 # Count OTUs per Phylum
 tax_table(physeq) %>%
   as.data.frame() %>%
@@ -649,7 +649,7 @@ Dat zijn dus het aantal Arthropoda OTUs gekend tot op klasse niveau (zonder de C
 
 per class insecta sl subset
 
-```{r per-class}
+```{r per-class-insecta-sl}
 # Count OTUs per Class
 tax_table(physeq) %>%
   as.data.frame() %>%
@@ -662,7 +662,7 @@ tax_table(physeq) %>%
 
 per order insecta sl subset
 
-```{r per-order}
+```{r per-order-insecta-sl}
 # Count OTUs per order
 tax_table(physeq) %>%
   as.data.frame() %>%
@@ -675,7 +675,7 @@ tax_table(physeq) %>%
 
 per family insecta sl subset
 
-```{r per-family}
+```{r per-family-insecta-sl}
 # Count OTUs per family
 tax_table(physeq) %>%
   as.data.frame() %>%
@@ -689,7 +689,7 @@ tax_table(physeq) %>%
 
 Per genus insecta sl subset
 
-```{r per-genus}
+```{r per-genus-insecta-sl}
 tax_table(physeq) %>%
   as.data.frame() %>%
   group_by(genus) %>%
@@ -700,7 +700,7 @@ tax_table(physeq) %>%
 
 Per species (check of er species zijn met meer dan 1 OTU)
 
-```{r per-species}
+```{r per-species-insecta-sl}
 tax_table(physeq) %>%
   as.data.frame() %>%
   group_by(species) %>%
@@ -716,7 +716,7 @@ tax_table(physeq) %>%
 Overzicht van som van reads per phylum:
 
 
-```{r}
+```{r read-counts-full-dataset-phylum}
 
 tidy_physeq_inse01 %>%
   tidytacos::aggregate_taxa(rank = "phylum") %>%
@@ -732,7 +732,7 @@ tidy_physeq_inse01 %>%
 Overzicht van som van reads per class:
 
 
-```{r}
+```{r read-counts-full-dataset-class}
 
 tidy_physeq_inse01 %>%
   tidytacos::aggregate_taxa(rank = "class") %>%
@@ -748,7 +748,7 @@ tidy_physeq_inse01 %>%
 
 Overzicht van som van reads per phylum insecta sl subset:
 
-```{r}
+```{r read-counts-insecta-sl-subset-phylum}
 tidy_physeq_insecta %>%
   tidytacos::aggregate_taxa(rank = "phylum") %>%
   tidytacos::everything() %>%
@@ -760,7 +760,7 @@ tidy_physeq_insecta %>%
 
 Overzicht van som van reads per class insecta sl subset:
 
-```{r}
+```{r read-counts-insecta-sl-subset-class}
 tidy_physeq_insecta %>%
   tidytacos::aggregate_taxa(rank = "class") %>%
   tidytacos::everything() %>%
@@ -774,7 +774,7 @@ tidy_physeq_insecta %>%
 
 Overzicht van som van reads per orde:
 
-```{r}
+```{r read-counts-insecta-sl-subset-order}
 tidy_physeq_insecta %>%
   tidytacos::aggregate_taxa(rank = "order") %>%
   tidytacos::everything() %>%
@@ -788,7 +788,7 @@ tidy_physeq_insecta %>%
 
 Overzicht van som van reads per family:
 
-```{r}
+```{r read-counts-insecta-sl-subset-family}
 tidy_physeq_insecta %>%
   tidytacos::aggregate_taxa(rank = "family") %>%
   tidytacos::everything() %>%
@@ -802,7 +802,7 @@ tidy_physeq_insecta %>%
 
 Overzicht van som van reads per genus:
 
-```{r}
+```{r read-counts-insecta-sl-subset-genus}
 tidy_physeq_insecta %>%
   tidytacos::aggregate_taxa(rank = "genus") %>%
   tidytacos::everything() %>%
@@ -816,7 +816,7 @@ tidy_physeq_insecta %>%
 
 Overzicht van som van reads per species:
 
-```{r}
+```{r read-counts-insecta-sl-subset-species}
 tidy_physeq_insecta %>%
   tidytacos::aggregate_taxa(rank = "species") %>%
   tidytacos::everything() %>%
