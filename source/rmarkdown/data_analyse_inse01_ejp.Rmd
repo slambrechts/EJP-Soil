@@ -571,7 +571,7 @@ conditional_effects(
 
 ## OTU counts 
 
-per phylum
+per phylum full primerset data
 
 ```{r per-phylum}
 # Count OTUs per Phylum
@@ -585,7 +585,7 @@ tax_table(physeq_Inse01) %>%
 ```
 
 
-per class
+per class full primerset data
 
 ```{r per-class}
 # Count OTUs per Class
@@ -599,7 +599,34 @@ tax_table(physeq_Inse01) %>%
 ```
 
 
-per order
+per phylum insecta sl subset
+
+```{r per-phylum}
+# Count OTUs per Phylum
+tax_table(physeq) %>%
+  as.data.frame() %>%
+  as_tibble() %>%
+  group_by(phylum) %>%
+  summarise(OTU_Count = n()) %>%
+  arrange(desc(OTU_Count)) %>%
+  kable()
+```
+
+
+per class insecta sl subset
+
+```{r per-class}
+# Count OTUs per Class
+tax_table(physeq) %>%
+  as.data.frame() %>%
+  as_tibble() %>%
+  group_by(class) %>%
+  summarise(OTU_Count = n()) %>%
+  arrange(desc(OTU_Count)) %>%
+  kable()
+```
+
+per order insecta sl subset
 
 ```{r per-order}
 # Count OTUs per order
@@ -612,7 +639,7 @@ tax_table(physeq) %>%
   kable()
 ```
 
-per family
+per family insecta sl subset
 
 ```{r per-family}
 # Count OTUs per family
@@ -626,7 +653,7 @@ tax_table(physeq) %>%
 ```
 
 
-Per genus
+Per genus insecta sl subset
 
 ```{r per-genus}
 tax_table(physeq) %>%
@@ -665,6 +692,30 @@ tidy_physeq_inse01 %>%
 ```
 
 Overzicht van som van reads per class:
+
+```{r}
+tidy_physeq_inse01 %>%
+  tidytacos::aggregate_taxa(rank = "class") %>%
+  tidytacos::everything() %>%
+  group_by(class) %>%
+  summarise(read_counts = sum(count)) %>%
+  arrange(desc(read_counts)) %>%
+  kable()
+```
+
+Overzicht van som van reads per phylum insecta sl subset:
+
+```{r}
+tidy_physeq_inse01 %>%
+  tidytacos::aggregate_taxa(rank = "phylum") %>%
+  tidytacos::everything() %>%
+  group_by(phylum) %>%
+  summarise(read_counts = sum(count)) %>%
+  arrange(desc(read_counts)) %>%
+  kable()
+```
+
+Overzicht van som van reads per class insecta sl subset:
 
 ```{r}
 tidy_physeq_inse01 %>%
