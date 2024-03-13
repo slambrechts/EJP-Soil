@@ -379,7 +379,7 @@ Unieke en gedeelde taxa per locatie:
 
 Silke kan jij dit deeltje aanvullen op basis van de code die je gebruikt hebt voor de Venn diagrammen:
 
-```{r detectie-otus-staalname-protocol}
+```{r detectie-otus-staalname-protocol Eval=False}
 insert Code Venn diagrammen per locatie
 
 start met phyloseq object: physeq_full_rarefied
@@ -413,7 +413,9 @@ tidy_physeq_insecta %>%
 ```
 Hiervoor gebruiken we beter de Krona charts
 
-```{r poging-krona-chart}
+```{r poging-krona-chart Eval=False}
+# integratie Krona werkt nog niet, installatie probleem
+
 # Create a new combined column
 combined_column <- paste(sample_data(physeq)$Landgebruik, sample_data(physeq)$Protocol2, sep = "_")
 
@@ -434,12 +436,17 @@ if (system(command = "which ktImportText",  intern = FALSE, ignore.stderr = TRUE
 
 onderstaande bar plots nog aan te passen
 
-```{r}
+```{r Eval=False}
+# werkt nog niet
+
 tidy_physeq %>%
   tidytacos::tacoplot_stack(x = Landgebruik)
 ```
 
-```{r}
+```{r Eval=False}
+
+# werkt nog niet
+
 tidy_physeq %>%
   tidytacos::tacoplot_stack(x = Protocol2)
 ```
