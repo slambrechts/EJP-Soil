@@ -1,6 +1,6 @@
 ---
 title: "EJP-Soil INSE01 data analyse"
-author: "Sam Lambrechts"
+author: "Sam Lambrechts", "Silke De Backer"
 date: "`r Sys.Date()`"
 output:
   bookdown::html_document2:
