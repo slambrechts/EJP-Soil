@@ -1,6 +1,8 @@
 ---
 title: "EJP-Soil INSE01 data analyse"
-author: "Sam Lambrechts", "Silke De Backer"
+author:
+  - "Sam Lambrechts" 
+  - "Silke De Backer"
 date: "`r Sys.Date()`"
 output:
   bookdown::html_document2:
@@ -377,14 +379,155 @@ filter(!present) %>%
 
 Unieke en gedeelde taxa per locatie:
 
-Silke kan jij dit deeltje aanvullen op basis van de code die je gebruikt hebt voor de Venn diagrammen:
 
-```{r detectie-otus-staalname-protocol, eval=FALSE}
-insert Code Venn diagrammen per locatie
+```{r detectie-otus-staalname-protocol}
 
-start met phyloseq object: physeq_full_rarefied
+# Your original phyloseq object (replace with your actual object)
+phyloseq_venn <- physeq_full_rarefied
 
-en verwijder dan eerst Deurne, Herentals, Gontrode en de strooisel stalen
+print(phyloseq_venn)
+
+# Extract sample data
+sample_data <- as.data.frame(sample_data(phyloseq_venn))
+
+# Extract unique locations and corresponding protocols
+locations <- unique(sample_data$Locatie)
+protocols <- lapply(locations, function(loc) unique(sample_data$Protocol[sample_data$Locatie == loc]))
+
+# Initialize vector to store samples to be removed
+samples_to_remove <- character(0)
+
+# Identify samples to be removed based on conditions
+for (i in seq_along(locations)) {
+  if (length(protocols[[i]]) == 1 && protocols[[i]] == "INBO") {
+    samples_to_remove <- c(samples_to_remove, rownames(sample_data[sample_data$Locatie == locations[i], ]))
+  }
+}
+
+# Remove duplicates
+samples_to_remove <- unique(samples_to_remove)
+
+# Which samples need to be removed?
+samples_to_remove
+
+
+# Remove samples
+phyloseq_venn_location <- subset_samples_no_zero(phyloseq_venn, Locatie != "Sombreffe")
+phyloseq_venn_location <- subset_samples_no_zero(phyloseq_venn_location, Locatie != "Deurne")
+phyloseq_venn_location <- subset_samples_no_zero(phyloseq_venn_location, Locatie != "Burdinne")
+phyloseq_venn_location <- subset_samples_no_zero(phyloseq_venn_location, Locatie != "Genappe")
+phyloseq_venn_filtered <- subset_samples_no_zero(phyloseq_venn_location, Locatie != "Herentals")
+
+
+# Make venn_diagram per
+# Per locatie
+phyloseq_venn_filtered_location <- phyloseq_venn_filtered
+
+# List of unique locations
+locations <- unique(sample_data(phyloseq_venn_filtered_location)$Locatie)
+
+# Create an empty list to store the subsetted phyloseq objects
+phyloseq_list <- list()
+
+# Loop through each location
+for (loc in locations) {
+  # Subset the phyloseq object for the current location
+  phyloseq_sub <- subset_samples_no_zero(phyloseq_venn_filtered_location, Locatie == loc)
+  
+  # Assign the subsetted phyloseq object to a variable with the location name
+  assign(paste0("phyloseq_", loc), phyloseq_sub)
+  
+  # Store the subsetted phyloseq object in the list
+  phyloseq_list[[loc]] <- phyloseq_sub
+}
+
+
+# List to store plots
+plots_venn_locations <- list()
+
+
+# Loop over each location
+for (location in locations) {
+  # Create tidy_physeq object
+  tidy_physeq_venn <- tidytacos::from_phyloseq(get(paste0("phyloseq_", location)))
+  
+  # Generate plot with specified size and add title
+  plot <- tidy_physeq_venn %>%
+    tidytacos::tacoplot_venn(Protocol2) +
+    ggtitle(paste("Location:", location)) +
+    expand_limits(x = c(-8, 10), y = c(-5, 5))  # Adjust expansion here
+  
+  # Store plot in the list
+  plots_venn_locations[[location]] <- plot
+}
+
+# Now you can access each plot from the list and display it
+for (location in locations) {
+  print(plots_venn_locations[[location]])
+}
+
+
+```
+```{r Species-detected-with-INBO-LUCAS }
+
+
+# Subset only known species
+physeq_known_species <- subset_taxa(physeq, !grepl("_otu", tax_table(physeq)[, "species"]))
+
+otu_table <- otu_table(physeq_known_species)
+head(otu_table)
+tax_table <- tax_table(physeq_known_species)
+head(tax_table)
+sample_data <- sample_data(physeq_known_species)
+head(sample_data)
+
+unique(sample_data(physeq_known_species)$Protocol2)
+
+
+
+
+
+# Extract locations with both INBO_0_10 and Lucas protocols
+locations_with_lucas <- unique(sample_data(physeq_known_species)$Locatie[sample_data(physeq_known_species)$Protocol2 == "Lucas"])
+
+# Extract species detected with INBO_0_10 but not LUCAS for each location
+locations <- unique(sample_data(physeq_known_species)$Locatie)
+for (loc in locations) {
+  # Skip locations where Lucas protocol doesn't exist
+  if (!(loc %in% locations_with_lucas)) {
+    next
+  }
+  
+  # Subset phyloseq object for the current location
+  physeq_loc <- subset_samples(physeq_known_species, Locatie == loc)
+  
+  # Get OTU IDs detected using INBO_0_10 method
+  otu_ids_inbo <- rownames(otu_table(physeq_loc)[, which(as.logical(apply(otu_table(physeq_loc), 2, any)) & sample_data(physeq_loc)$Protocol2 == "INBO_0_10"), drop = FALSE])
+
+# Get OTU IDs detected using LUCAS method
+  otu_ids_lucas <- rownames(otu_table(physeq_loc)[, which(as.logical(apply(otu_table(physeq_loc), 2, any)) & sample_data(physeq_loc)$Protocol2 == "Lucas"), drop = FALSE])
+
+
+
+  # Check if otu_ids_inbo and otu_ids_lucas have the same OTU IDs
+  if (identical(otu_ids_inbo, otu_ids_lucas)) {
+    cat("Location:", loc, "\n")
+    cat("No species detected using INBO_0_10 that are not detected using LUCAS.\n\n")
+  } else {
+    # Find species detected with INBO_0_10 but not LUCAS
+    otu_ids_diff <- setdiff(otu_ids_inbo, otu_ids_lucas)
+    
+    # Get Species names for the differential OTUs
+    species_names <- levels(tax_table(physeq_loc)[match(otu_ids_diff, rownames(tax_table(physeq_loc))), "species"])
+    species_names <- paste(species_names, collapse = ", ")
+    
+    # Print the result
+    cat("Location:", loc, "\n")
+    cat("Species detected using INBO_0_10 but not LUCAS:", species_names, "\n\n")
+  }
+}
+
+
 ```
 
 Unieke en gedeelde taxa per landgebruik:
