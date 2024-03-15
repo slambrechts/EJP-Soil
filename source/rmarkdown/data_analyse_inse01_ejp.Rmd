@@ -468,7 +468,7 @@ for (location in locations) {
 
 
 ```
-```{r Species-detected-with-INBO-LUCAS }
+```{r Species-detected-with-INBOvsLUCAS }
 
 
 # Subset only known species
@@ -482,10 +482,6 @@ sample_data <- sample_data(physeq_known_species)
 head(sample_data)
 
 unique(sample_data(physeq_known_species)$Protocol2)
-
-
-
-
 
 # Extract locations with both INBO_0_10 and Lucas protocols
 locations_with_lucas <- unique(sample_data(physeq_known_species)$Locatie[sample_data(physeq_known_species)$Protocol2 == "Lucas"])
