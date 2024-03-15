@@ -486,8 +486,7 @@ unique(sample_data(physeq_known_species)$Protocol2)
 # Extract locations with both INBO_0_10 and Lucas protocols
 locations_with_lucas <- unique(sample_data(physeq_known_species)$Locatie[sample_data(physeq_known_species)$Protocol2 == "Lucas"])
 
-# Extract species detected with INBO_0_10 but not LUCAS for each location
-locations <- unique(sample_data(physeq_known_species)$Locatie)
+# Comparison of Detection Methods
 for (loc in locations) {
   # Skip locations where Lucas protocol doesn't exist
   if (!(loc %in% locations_with_lucas)) {
@@ -499,29 +498,26 @@ for (loc in locations) {
   
   # Get OTU IDs detected using INBO_0_10 method
   otu_ids_inbo <- rownames(otu_table(physeq_loc)[, which(as.logical(apply(otu_table(physeq_loc), 2, any)) & sample_data(physeq_loc)$Protocol2 == "INBO_0_10"), drop = FALSE])
-
-# Get OTU IDs detected using LUCAS method
+  
+  # Get OTU IDs detected using LUCAS method
   otu_ids_lucas <- rownames(otu_table(physeq_loc)[, which(as.logical(apply(otu_table(physeq_loc), 2, any)) & sample_data(physeq_loc)$Protocol2 == "Lucas"), drop = FALSE])
-
-
-
-  # Check if otu_ids_inbo and otu_ids_lucas have the same OTU IDs
-  if (identical(otu_ids_inbo, otu_ids_lucas)) {
+  
+  # Get species names corresponding to OTU IDs
+  species_names_inbo <- tax_table(physeq_loc)[otu_ids_inbo, "species"]
+  species_names_lucas <- tax_table(physeq_loc)[otu_ids_lucas, "species"]
+  
+  # Find species detected with INBO_0_10 but not LUCAS
+  species_inbo_not_lucas <- setdiff(species_names_inbo, species_names_lucas)
+  
+  if (length(species_inbo_not_lucas) == 0) {
     cat("Location:", loc, "\n")
     cat("No species detected using INBO_0_10 that are not detected using LUCAS.\n\n")
   } else {
-    # Find species detected with INBO_0_10 but not LUCAS
-    otu_ids_diff <- setdiff(otu_ids_inbo, otu_ids_lucas)
-    
-    # Get Species names for the differential OTUs
-    species_names <- levels(tax_table(physeq_loc)[match(otu_ids_diff, rownames(tax_table(physeq_loc))), "species"])
-    species_names <- paste(species_names, collapse = ", ")
-    
-    # Print the result
     cat("Location:", loc, "\n")
-    cat("Species detected using INBO_0_10 but not LUCAS:", species_names, "\n\n")
+    cat("Species detected using INBO_0_10 but not LUCAS:", paste(species_inbo_not_lucas, collapse = ", "), "\n\n")
   }
 }
+
 
 
 ```
