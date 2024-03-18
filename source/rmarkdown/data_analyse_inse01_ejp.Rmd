@@ -468,7 +468,7 @@ for (location in locations) {
 
 
 ```
-```{r Species-detected-with-INBOvsLUCAS }
+```{r Species-detected-with-INBOvsLUCAS, eval=FALSE}
 
 
 # Subset only known species
@@ -495,12 +495,20 @@ for (loc in locations) {
   
   # Subset phyloseq object for the current location
   physeq_loc <- subset_samples(physeq_known_species, Locatie == loc)
+
   
-  # Get OTU IDs detected using INBO_0_10 method
-  otu_ids_inbo <- rownames(otu_table(physeq_loc)[, which(as.logical(apply(otu_table(physeq_loc), 2, any)) & sample_data(physeq_loc)$Protocol2 == "INBO_0_10"), drop = FALSE])
-  
-  # Get OTU IDs detected using LUCAS method
-  otu_ids_lucas <- rownames(otu_table(physeq_loc)[, which(as.logical(apply(otu_table(physeq_loc), 2, any)) & sample_data(physeq_loc)$Protocol2 == "Lucas"), drop = FALSE])
+  # Subset OTU table for INBO_0_10 method
+  otu_table_inbo <- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol2 == "INBO_0_10"]
+
+# Get OTU IDs detected using INBO_0_10 method
+  otu_ids_inbo <- rownames(otu_table_inbo)[apply(otu_table_inbo, 1, function(x) sum(x) > 0)]
+
+# Subset OTU table for LUCAS method
+  otu_table_lucas <- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol2 == "Lucas"]
+
+# Get OTU IDs detected using LUCAS method
+  otu_ids_lucas <- rownames(otu_table_lucas)[apply(otu_table_lucas, 1, function(x) sum(x) > 0)]
+
   
   # Get species names corresponding to OTU IDs
   species_names_inbo <- tax_table(physeq_loc)[otu_ids_inbo, "species"]
@@ -517,7 +525,6 @@ for (loc in locations) {
     cat("Species detected using INBO_0_10 but not LUCAS:", paste(species_inbo_not_lucas, collapse = ", "), "\n\n")
   }
 }
-
 
 
 ```
