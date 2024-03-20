@@ -377,24 +377,76 @@ tidy_physeq_srs_known_class <- tidy_physeq_srs_known_class %>%
 
 ```
 
-
 # Verkennende analyses
 
+
 ```{r}
-physeq
+physeq_nonrarefied
 ```
 
+```{r}
+physeq_nonrarefied_merged
+```
+
+```{r}
+physeq_srs
+```
+
+```{r}
+physeq_known_species
+```
+
+```{r}
+physeq_known_genera
+```
+
+```{r}
+physeq_known_family
+```
+
+```{r}
+physeq_known_order
+```
+
+```{r}
+physeq_known_class
+```
+
+```{r}
+physeq_srs_known_species
+```
+
+```{r}
+physeq_srs_known_genera
+```
+
+```{r}
+physeq_srs_known_family
+```
+
+```{r}
+physeq_srs_known_order
+```
+
+```{r}
+physeq_srs_known_class
+```
 
 ## Sample data
 
 ```{r verken-sample-data}
-glimpse(sample_data(physeq) %>% as_tibble())
+glimpse(sample_data(physeq_srs) %>% as_tibble())
 ```
 
 Check totaal aantal reads (hier de decielen van 0% = minimum tot 100% = maximum):
 
 ```{r quantiles-reads}
-sample_sums(physeq) %>%
+sample_sums(physeq_nonrarefied) %>%
+  quantile(probs = seq(0, 1, 0.1))
+```
+
+```{r quantiles-reads-species-merged}
+sample_sums(physeq_nonrarefied_merged) %>%
   quantile(probs = seq(0, 1, 0.1))
 ```
 
@@ -402,7 +454,7 @@ sample_sums(physeq) %>%
 We verkennen ook de verdeling van de samples over de belangrijkste design-variabelen:
 
 ```{r designvars}
-tidy_physeq$samples %>%
+tidy_physeq_srs$samples %>%
   count(Protocol2, Land_use) %>%
   kable()
 ```
@@ -410,7 +462,7 @@ tidy_physeq$samples %>%
 Aantal bodemlocaties:
 
 ```{r}
-tidy_physeq$samples %>%
+tidy_physeq_srs$samples %>%
   group_by(Land_use) %>%
   summarise(n_locaties = n_distinct(Name)) %>%
   kable()
@@ -418,7 +470,7 @@ tidy_physeq$samples %>%
 ```
 
 ```{r}
-tidy_physeq$samples %>%
+tidy_physeq_srs$samples %>%
   group_by(Protocol2) %>%
   summarise(n_locaties = n_distinct(Name)) %>%
   kable()
@@ -433,19 +485,19 @@ Met deze gepaardheid moeten we rekening houden in analyses.
 ```{r verken-otu-data}
 
 
-glimpse(otu_table(physeq) %>% as.data.frame %>% as_tibble())
+glimpse(otu_table(physeq_srs) %>% as.data.frame %>% as_tibble())
 ```
 
 ## Taxonomie tabel
 
 
 ```{r verken-taxonomie-data}
-glimpse(tax_table(physeq) %>% as.data.frame %>% as_tibble())
+glimpse(tax_table(physeq_srs) %>% as.data.frame %>% as_tibble())
 ```
 
 ```{r GBIF-check-presence}
 
-Species <- as.vector(tax_table(physeq)[, "Species"])
+Species <- as.vector(tax_table(physeq_known_species)[, "Species"])
 Species <- Species[!grepl("unidentified|\\?", Species)]
 
 Species <- gsub("_", " ", Species)
@@ -456,26 +508,120 @@ filter(!present) %>%
   kable(caption = "Not present according to GBIF in Western-Europe")
 ```
 
+
+## Unieke en gedeelde taxa per staalname protocol per locatie:
+
+
+```{r detectie-otus-staalname-protocol}
+
+# Your original phyloseq object (replace with your actual object)
+phyloseq_venn <- physeq_srs
+
+print(phyloseq_venn)
+
+# Extract sample data
+sample_data <- as.data.frame(sample_data(phyloseq_venn))
+
+# Extract unique locations and corresponding protocols
+locations <- unique(sample_data$Locatie)
+protocols <- lapply(locations, function(loc) unique(sample_data$Protocol[sample_data$Locatie == loc]))
+
+# Initialize vector to store samples to be removed
+samples_to_remove <- character(0)
+
+# Identify samples to be removed based on conditions
+for (i in seq_along(locations)) {
+  if (length(protocols[[i]]) == 1 && protocols[[i]] == "INBO") {
+    samples_to_remove <- c(samples_to_remove, rownames(sample_data[sample_data$Locatie == locations[i], ]))
+  }
+}
+
+# Remove duplicates
+samples_to_remove <- unique(samples_to_remove)
+
+# Which samples need to be removed?
+samples_to_remove
+
+
+# Remove samples
+phyloseq_venn_location <- subset_samples_no_zero(phyloseq_venn, Locatie != "Sombreffe")
+phyloseq_venn_location <- subset_samples_no_zero(phyloseq_venn_location, Locatie != "Deurne")
+phyloseq_venn_location <- subset_samples_no_zero(phyloseq_venn_location, Locatie != "Burdinne")
+phyloseq_venn_location <- subset_samples_no_zero(phyloseq_venn_location, Locatie != "Genappe")
+phyloseq_venn_filtered <- subset_samples_no_zero(phyloseq_venn_location, Locatie != "Herentals")
+
+
+# Make venn_diagram per
+# Per locatie
+phyloseq_venn_filtered_location <- phyloseq_venn_filtered
+
+# List of unique locations
+locations <- unique(sample_data(phyloseq_venn_filtered_location)$Locatie)
+
+# Create an empty list to store the subsetted phyloseq objects
+phyloseq_list <- list()
+
+# Loop through each location
+for (loc in locations) {
+  # Subset the phyloseq object for the current location
+  phyloseq_sub <- subset_samples_no_zero(phyloseq_venn_filtered_location, Locatie == loc)
+  
+  # Assign the subsetted phyloseq object to a variable with the location name
+  assign(paste0("phyloseq_", loc), phyloseq_sub)
+  
+  # Store the subsetted phyloseq object in the list
+  phyloseq_list[[loc]] <- phyloseq_sub
+}
+
+
+# List to store plots
+plots_venn_locations <- list()
+
+
+# Loop over each location
+for (location in locations) {
+  # Create tidy_physeq object
+  tidy_physeq_venn <- tidytacos::from_phyloseq(get(paste0("phyloseq_", location)))
+  
+  # Generate plot with specified size and add title
+  plot <- tidy_physeq_venn %>%
+    tidytacos::tacoplot_venn(Protocol2) +
+    ggtitle(paste("Location:", location)) +
+    expand_limits(x = c(-8, 10), y = c(-5, 5))  # Adjust expansion here
+  
+  # Store plot in the list
+  plots_venn_locations[[location]] <- plot
+}
+
+# Now you can access each plot from the list and display it
+for (location in locations) {
+  print(plots_venn_locations[[location]])
+}
+
+
+```
+
+
 Unieke en gedeelde taxa per Protocol2 over heel de dataset:
 
 ```{r}
-tidy_physeq %>%
+tidy_physeq_srs %>%
   tidytacos::tacoplot_venn(Protocol2)
 ```
 
 Unieke en gedeelde taxa per Land_use:
 
 ```{r}
-tidy_physeq %>%
+tidy_physeq_srs %>%
   tidytacos::tacoplot_venn(Land_use)
 ```
 
 ```{r}
-tidy_physeq %>%
+tidy_physeq_srs %>%
   tidytacos::tacoplot_stack()
 ```
 
-```{r}
+```{r Krona, eval=FALSE}
 # Create a new combined column
 combined_column <- paste(sample_data(physeq_rarefied)$Land_use, sample_data(physeq_rarefied)$Protocol2, sep = "_")
 
@@ -495,13 +641,13 @@ if (system(command = "which ktImportText",  intern = FALSE, ignore.stderr = TRUE
 ```
 
 
-```{r}
-tidy_physeq %>%
+```{r eval=FALSE}
+tidy_physeq_srs %>%
   tidytacos::tacoplot_stack(x = Land_use)
 ```
 
-```{r}
-tidy_physeq %>%
+```{r eval=FALSE}
+tidy_physeq_srs %>%
   tidytacos::tacoplot_stack(x = Protocol2)
 ```
 
@@ -513,7 +659,7 @@ tidy_physeq %>%
 Het geobserveerde aantal taxa neemt toe met het aantal reads in een staal:
 
 ```{r}
-tidy_physeq$samples %>%
+tidy_physeq_nonrarefied_merged$samples %>%
   filter(total_count > 0) %>%
   ggplot(
     aes(x = total_count, y = observed)) +
@@ -529,7 +675,7 @@ Voor deze analyse, verwijderen we enkele stalen met een laag totaal aantal reads
 
 We modelleren de soortenrijkdom als een Negatief Binomiaal model omdat we verwachten dat deze data overdispersie vertonen ten opzichte van een Poisson verdeling (waar de veronderstelling is dat de variantie gelijk aan het gemiddelde).
 
-```{r m-fungi-richness}
+```{r m-fungi-richness, eval=FALSE}
 samples_totcount_10k <- tidy_physeq$samples %>%
   filter(total_count > 1e+4)
 
@@ -552,22 +698,22 @@ Model validatie toont dat er problemen zijn met de residuele variabiliteit.
 Er lijkt vooral overdispersie (variabiliteit groter dan verwacht) te zijn bij grote waarden van de soortenrijkdom.
 
 
-```{r}
+```{r eval=FALSE}
 performance::check_model(m_fungi_richness)
 ```
 
 
-```{r m-fungi-richness-summary}
+```{r m-fungi-richness-summary, eval=FALSE}
 summary(m_fungi_richness)
 ```
 
-```{r m-fungi-richness-anova}
+```{r m-fungi-richness-anova, eval=FALSE}
 car::Anova(m_fungi_richness)
 ```
 
 Zoals te verwachten, is het belangrijk om te corrigeren voor het totaal aantal reads:
 
-```{r}
+```{r eval=FALSE}
 marginaleffects::plot_predictions(
   m_fungi_richness,
   condition = c("total_count"),
@@ -579,7 +725,7 @@ marginaleffects::plot_predictions(
 
 We kunnen nu predicties maken van soortenrijkdom waarbij we controleren voor het totaal aantal reads in een staal:
 
-```{r m-fungi-richness-predictions}
+```{r m-fungi-richness-predictions, eval=FALSE}
 marginaleffects::plot_predictions(
   m_fungi_richness,
   condition = c("Land_use", "Protocol2"),
@@ -596,18 +742,18 @@ Dit is een alternatief voor voorgaande analyse.
 Schatting van de soortenrijkdom via rarefaction analyse.
 
 ```{r rarefaction}
-sam_new <- data.frame(sample_data(physeq))
+sam_new <- data.frame(sample_data(physeq_nonrarefied_merged))
 
 
 estimated_Species_richness <- vegan::rarefy(
-  veganobject,
-  30780,
+  veganobject_physeq_nonrarefied_merged,
+  min(sample_sums(physeq_nonrarefied_merged)),
   se = TRUE,
   MARGIN = 1)
 
 
 true_rarefaction_results <- cbind(
-  sam_new %>% select(Naam, Protocol2, Land_use),
+  sam_new %>% select(Name, Protocol2, Land_use),
   est = estimated_Species_richness["S", ],
   se = estimated_Species_richness["se", ]) %>%
   as_tibble() %>%
