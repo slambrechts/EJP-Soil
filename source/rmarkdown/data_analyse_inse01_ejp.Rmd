@@ -377,7 +377,7 @@ filter(!present) %>%
   kable(caption = "Not present according to GBIF in Western-Europe")
 ```
 
-Unieke en gedeelde taxa per locatie:
+## Unieke en gedeelde taxa per staalname protocol per locatie:
 
 
 ```{r detectie-otus-staalname-protocol}
@@ -468,6 +468,9 @@ for (location in locations) {
 
 
 ```
+
+Gekende soorten al dan niet gemist met bepaalde staalname protocollen per locatie
+
 ```{r Species-detected-with-INBOvsLUCAS, eval=FALSE}
 
 
