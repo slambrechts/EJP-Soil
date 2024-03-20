@@ -113,7 +113,10 @@ Het bestand dat wordt ingelezen is `r basename(path_naar_bestand)` en `r basenam
 
 verwijder Gontrode, strooiselstalen, en replicaten
 
-```{r hernoem-objecten-en-filter-ongewenste-stalen}
+```{r hernoem-objecten-en-filter-ongewenste-stalen-en-otus}
+
+# rename physeq objects and remove samples from Gontrode (different project) en litter layer
+
 physeq_srs <- SRS_fungi_species
 physeq_nonrarefied <- physeq_fungi_fungi
 physeq_nonrarefied_merged <- physeq_fungi_fungi.species
@@ -125,6 +128,38 @@ physeq_nonrarefied_merged <- subset_samples_no_zero(physeq_nonrarefied_merged, L
 physeq_srs <- subset_samples_no_zero(physeq_srs, Protocol2 != "litter")
 physeq_nonrarefied <- subset_samples_no_zero(physeq_nonrarefied, Protocol2 != "litter")
 physeq_nonrarefied_merged <- subset_samples_no_zero(physeq_nonrarefied_merged, Protocol2 != "litter")
+
+# remove singetons from physeq srs
+
+taxa_sums <- taxa_sums(physeq_srs)
+
+singletons <- names(taxa_sums[taxa_sums == 1])
+
+empty_otus <- names(taxa_sums[taxa_sums == 0])
+
+physeq_srs <- prune_taxa(!(taxa_names(physeq_srs) %in% singletons), physeq_srs)
+
+# remove singletons from physeq nonrarefied
+
+taxa_sums <- taxa_sums(physeq_nonrarefied)
+
+singletons <- names(taxa_sums[taxa_sums == 1])
+
+empty_otus <- names(taxa_sums[taxa_sums == 0])
+
+physeq_nonrarefied <- prune_taxa(!(taxa_names(physeq_nonrarefied) %in% singletons), physeq_nonrarefied)
+
+# remove singetons from physeq nonrarefied merged
+
+taxa_sums <- taxa_sums(physeq_nonrarefied_merged)
+
+singletons <- names(taxa_sums[taxa_sums == 1])
+
+empty_otus <- names(taxa_sums[taxa_sums == 0])
+
+physeq_nonrarefied_merged <- prune_taxa(!(taxa_names(physeq_nonrarefied_merged) %in% singletons), physeq_nonrarefied_merged)
+
+# create phyloseq objects with only known taxa
 
 physeq_known_species <- subset_taxa(physeq_nonrarefied_merged, !grepl("_otu", tax_table(physeq_nonrarefied_merged)[, "Species"]))
 physeq_known_genera <- subset_taxa(physeq_nonrarefied_merged, !grepl("_otu", tax_table(physeq_nonrarefied_merged)[, "Genus"]))
@@ -152,25 +187,7 @@ sample_sums(physeq_nonrarefied_merged)
 sample_sums(physeq_srs)
 ```
 
-```{r preprocessing-encore}
-
-taxa_sums <- taxa_sums(physeq_srs)
-
-singletons <- names(taxa_sums[taxa_sums == 1])
-
-empty_otus <- names(taxa_sums[taxa_sums == 0])
-
-empty_otus
-
-singletons
-
-physeq_no_singletons <- prune_taxa(!(taxa_names(physeq) %in% singletons), physeq)
-
-physeq
-
-physeq_known_species <- subset_taxa(physeq, !grepl("unidentified|\\?", tax_table(physeq)[, "Species"]))
-
-physeq_known_species
+```{r test}
 
 
 ```
