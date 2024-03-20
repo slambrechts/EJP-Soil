@@ -126,17 +126,17 @@ physeq_srs <- subset_samples_no_zero(physeq_srs, Protocol2 != "litter")
 physeq_nonrarefied <- subset_samples_no_zero(physeq_nonrarefied, Protocol2 != "litter")
 physeq_nonrarefied_merged <- subset_samples_no_zero(physeq_nonrarefied_merged, Protocol2 != "litter")
 
-physeq_known_species <- subset_taxa(physeq_nonrarefied_merged, !grepl("_otu", tax_table(physeq_nonrarefied_merged)[, "species"]))
-physeq_known_genera <- subset_taxa(physeq_nonrarefied_merged, !grepl("_otu", tax_table(physeq_nonrarefied_merged)[, "genus"]))
-physeq_known_order <- subset_taxa(physeq_nonrarefied_merged, !grepl("_otu", tax_table(physeq_nonrarefied_merged)[, "order"]))
-physeq_known_family <- subset_taxa(physeq_nonrarefied_merged, !grepl("_otu", tax_table(physeq_nonrarefied_merged)[, "family"]))
-physeq_known_class <- subset_taxa(physeq_nonrarefied_merged, !grepl("_otu", tax_table(physeq_nonrarefied_merged)[, "class"]))
+physeq_known_species <- subset_taxa(physeq_nonrarefied_merged, !grepl("_otu", tax_table(physeq_nonrarefied_merged)[, "Species"]))
+physeq_known_genera <- subset_taxa(physeq_nonrarefied_merged, !grepl("_otu", tax_table(physeq_nonrarefied_merged)[, "Genus"]))
+physeq_known_order <- subset_taxa(physeq_nonrarefied_merged, !grepl("_otu", tax_table(physeq_nonrarefied_merged)[, "Order"]))
+physeq_known_family <- subset_taxa(physeq_nonrarefied_merged, !grepl("_otu", tax_table(physeq_nonrarefied_merged)[, "Family"]))
+physeq_known_class <- subset_taxa(physeq_nonrarefied_merged, !grepl("_otu", tax_table(physeq_nonrarefied_merged)[, "Class"]))
 
-physeq_srs_known_species <- subset_taxa(physeq_srs, !grepl("_otu", tax_table(physeq_srs)[, "species"]))
-physeq_srs_known_genera <- subset_taxa(physeq_srs, !grepl("_otu", tax_table(physeq_srs)[, "genus"]))
-physeq_srs_known_order <- subset_taxa(physeq_srs, !grepl("_otu", tax_table(physeq_srs)[, "order"]))
-physeq_srs_known_family <- subset_taxa(physeq_srs, !grepl("_otu", tax_table(physeq_srs)[, "family"]))
-physeq_srs_known_class <- subset_taxa(physeq_srs, !grepl("_otu", tax_table(physeq_srs)[, "class"]))
+physeq_srs_known_species <- subset_taxa(physeq_srs, !grepl("_otu", tax_table(physeq_srs)[, "Species"]))
+physeq_srs_known_genera <- subset_taxa(physeq_srs, !grepl("_otu", tax_table(physeq_srs)[, "Genus"]))
+physeq_srs_known_order <- subset_taxa(physeq_srs, !grepl("_otu", tax_table(physeq_srs)[, "Order"]))
+physeq_srs_known_family <- subset_taxa(physeq_srs, !grepl("_otu", tax_table(physeq_srs)[, "Family"]))
+physeq_srs_known_class <- subset_taxa(physeq_srs, !grepl("_otu", tax_table(physeq_srs)[, "Class"]))
 
 ```
 
