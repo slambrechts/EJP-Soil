@@ -112,8 +112,8 @@ verwijder Gontrode, strooiselstalen, en replicaten
 ```{r hernoem-objecten-en-filter-ongewenste-stalen}
 
 physeq <- physeq_insecta_subset.species
-physeq_full <- physeq_Inse01_Arthropoda
-physeq_Inse01 <- physeq_Inse01
+physeq_full <- physeq_Inse01_Arthropoda # includes Collembola and unknown Arthropoda OTUs
+physeq_Inse01 <- physeq_Inse01 # also includes Annelida
 
 physeq <- subset_samples_no_zero(physeq, Locatie != "Gontrode")
 physeq_full <- subset_samples_no_zero(physeq_full, Locatie != "Gontrode")
@@ -123,7 +123,8 @@ physeq <- subset_samples_no_zero(physeq, Protocol2 != "strooisel")
 physeq_full <- subset_samples_no_zero(physeq_full, Protocol2 != "strooisel")
 physeq_Inse01 <- subset_samples_no_zero(physeq_Inse01, Protocol2 != "strooisel")
 
-
+physeq_known_species <- subset_taxa(physeq, !grepl("_otu", tax_table(physeq)[, "species"]))
+physeq_known_genera <- subset_taxa(physeq, !grepl("_otu", tax_table(physeq)[, "genus"]))
 
 ```
 
@@ -245,6 +246,10 @@ tidy_physeq_insecta <- tidytacos::from_phyloseq(physeq)
 
 tidy_physeq_rarefied <- tidytacos::from_phyloseq(physeq_full_rarefied)
 
+tidy_physeq_known_species <- tidytacos::from_phyloseq(physeq_known_species)
+
+tidy_physeq_known_genera <- tidytacos::from_phyloseq(physeq_known_genera)
+
 
 tidy_physeq_inse01 <- tidy_physeq_inse01 %>%
   remove_empty_samples() %>%
@@ -272,6 +277,22 @@ tidy_physeq_insecta <- tidy_physeq_insecta %>%
   tidytacos::add_total_count()
 
 tidy_physeq_rarefied <- tidy_physeq_rarefied %>%
+  remove_empty_samples() %>%
+  tidytacos::set_rank_names(
+    rank_names = c("phylum", "class", "order", "family", "genus", "species")
+  ) %>%
+  tidytacos::add_alpha() %>%
+  tidytacos::add_total_count()
+
+physeq_known_species <- physeq_known_species %>%
+  remove_empty_samples() %>%
+  tidytacos::set_rank_names(
+    rank_names = c("phylum", "class", "order", "family", "genus", "species")
+  ) %>%
+  tidytacos::add_alpha() %>%
+  tidytacos::add_total_count()
+
+physeq_known_genera <- physeq_known_genera %>%
   remove_empty_samples() %>%
   tidytacos::set_rank_names(
     rank_names = c("phylum", "class", "order", "family", "genus", "species")
