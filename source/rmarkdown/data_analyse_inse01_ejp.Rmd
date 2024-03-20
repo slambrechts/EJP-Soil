@@ -291,7 +291,7 @@ tidy_physeq_rarefied <- tidy_physeq_rarefied %>%
   tidytacos::add_alpha() %>%
   tidytacos::add_total_count()
 
-physeq_known_species <- physeq_known_species %>%
+tidy_physeq_known_species <- tidy_physeq_known_species %>%
   remove_empty_samples() %>%
   tidytacos::set_rank_names(
     rank_names = c("phylum", "class", "order", "family", "genus", "species")
@@ -299,7 +299,7 @@ physeq_known_species <- physeq_known_species %>%
   tidytacos::add_alpha() %>%
   tidytacos::add_total_count()
 
-physeq_known_genera <- physeq_known_genera %>%
+tidy_physeq_known_genera <- tidy_physeq_known_genera %>%
   remove_empty_samples() %>%
   tidytacos::set_rank_names(
     rank_names = c("phylum", "class", "order", "family", "genus", "species")
@@ -307,7 +307,7 @@ physeq_known_genera <- physeq_known_genera %>%
   tidytacos::add_alpha() %>%
   tidytacos::add_total_count()
 
-physeq_known_family <- physeq_known_family %>%
+tidy_physeq_known_family <- tidy_physeq_known_family %>%
   remove_empty_samples() %>%
   tidytacos::set_rank_names(
     rank_names = c("phylum", "class", "order", "family", "genus", "species")
@@ -315,7 +315,7 @@ physeq_known_family <- physeq_known_family %>%
   tidytacos::add_alpha() %>%
   tidytacos::add_total_count()
 
-physeq_known_order <- physeq_known_order %>%
+tidy_physeq_known_order <- tidy_physeq_known_order %>%
   remove_empty_samples() %>%
   tidytacos::set_rank_names(
     rank_names = c("phylum", "class", "order", "family", "genus", "species")
