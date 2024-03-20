@@ -125,6 +125,9 @@ physeq_Inse01 <- subset_samples_no_zero(physeq_Inse01, Protocol2 != "strooisel")
 
 physeq_known_species <- subset_taxa(physeq, !grepl("_otu", tax_table(physeq)[, "species"]))
 physeq_known_genera <- subset_taxa(physeq, !grepl("_otu", tax_table(physeq)[, "genus"]))
+physeq_known_order <- subset_taxa(physeq, !grepl("_otu", tax_table(physeq)[, "order"]))
+physeq_known_family <- subset_taxa(physeq, !grepl("_otu", tax_table(physeq)[, "family"]))
+
 
 ```
 
@@ -250,6 +253,10 @@ tidy_physeq_known_species <- tidytacos::from_phyloseq(physeq_known_species)
 
 tidy_physeq_known_genera <- tidytacos::from_phyloseq(physeq_known_genera)
 
+tidy_physeq_known_family <- tidytacos::from_phyloseq(physeq_known_family)
+
+tidy_physeq_known_order <- tidytacos::from_phyloseq(physeq_known_order)
+
 
 tidy_physeq_inse01 <- tidy_physeq_inse01 %>%
   remove_empty_samples() %>%
@@ -293,6 +300,22 @@ physeq_known_species <- physeq_known_species %>%
   tidytacos::add_total_count()
 
 physeq_known_genera <- physeq_known_genera %>%
+  remove_empty_samples() %>%
+  tidytacos::set_rank_names(
+    rank_names = c("phylum", "class", "order", "family", "genus", "species")
+  ) %>%
+  tidytacos::add_alpha() %>%
+  tidytacos::add_total_count()
+
+physeq_known_family <- physeq_known_family %>%
+  remove_empty_samples() %>%
+  tidytacos::set_rank_names(
+    rank_names = c("phylum", "class", "order", "family", "genus", "species")
+  ) %>%
+  tidytacos::add_alpha() %>%
+  tidytacos::add_total_count()
+
+physeq_known_order <- physeq_known_order %>%
   remove_empty_samples() %>%
   tidytacos::set_rank_names(
     rank_names = c("phylum", "class", "order", "family", "genus", "species")
@@ -839,11 +862,37 @@ tax_table(physeq) %>%
   kable()
 ```
 
+per order insecta sl subset known orders
+
+```{r per-known-order-insecta-sl}
+# Count OTUs per order
+tax_table(physeq_known_order) %>%
+  as.data.frame() %>%
+  as_tibble() %>%
+  group_by(order) %>%
+  summarise(OTU_Count = n()) %>%
+  arrange(desc(OTU_Count)) %>%
+  kable()
+```
+
 per family insecta sl subset
 
 ```{r per-family-insecta-sl}
 # Count OTUs per family
 tax_table(physeq) %>%
+  as.data.frame() %>%
+  as_tibble() %>%
+  group_by(family) %>%
+  summarise(OTU_Count = n()) %>%
+  arrange(desc(OTU_Count)) %>%
+  kable()
+```
+
+per family insecta sl subset known families
+
+```{r per-known-family-insecta-sl}
+# Count OTUs per family
+tax_table(physeq_known_family) %>%
   as.data.frame() %>%
   as_tibble() %>%
   group_by(family) %>%
@@ -864,10 +913,33 @@ tax_table(physeq) %>%
   kable()
 ```
 
+Per genus insecta sl subset known genera
+
+```{r per-known-genus-insecta-sl}
+tax_table(physeq_known_genera) %>%
+  as.data.frame() %>%
+  group_by(genus) %>%
+  summarise(OTU_Count = n()) %>%
+  arrange(desc(OTU_Count)) %>%
+  kable()
+```
+
 Per species (check of er species zijn met meer dan 1 OTU)
 
 ```{r per-species-insecta-sl}
 tax_table(physeq) %>%
+  as.data.frame() %>%
+  group_by(species) %>%
+  summarise(OTU_Count = n()) %>%
+  filter(OTU_Count > 1) %>%
+  arrange(desc(OTU_Count)) %>%
+  kable()
+```
+
+Per species known species (check of er species zijn met meer dan 1 OTU)
+
+```{r per-known-species-insecta-sl}
+tax_table(physeq_known_species) %>%
   as.data.frame() %>%
   group_by(species) %>%
   summarise(OTU_Count = n()) %>%
@@ -952,10 +1024,38 @@ tidy_physeq_insecta %>%
   kable()
 ```
 
+Overzicht van som van reads per orde known orders:
+
+```{r read-counts-insecta-sl-subset-known-order}
+tidy_physeq_known_order %>%
+  tidytacos::aggregate_taxa(rank = "order") %>%
+  tidytacos::everything() %>%
+  group_by(order) %>%
+  summarise(read_counts = sum(count)) %>%
+  mutate(percentage = round((read_counts / sum(read_counts)) * 100, 2)) %>% # Calculate and round percentage
+  arrange(desc(read_counts)) %>%
+  select(order, percentage) %>% # Keep only necessary columns if desired
+  kable()
+```
+
 Overzicht van som van reads per family:
 
 ```{r read-counts-insecta-sl-subset-family}
 tidy_physeq_insecta %>%
+  tidytacos::aggregate_taxa(rank = "family") %>%
+  tidytacos::everything() %>%
+  group_by(family) %>%
+  summarise(read_counts = sum(count)) %>%
+  mutate(percentage = round((read_counts / sum(read_counts)) * 100, 2)) %>% # Calculate and round percentage
+  arrange(desc(read_counts)) %>%
+  select(family, percentage) %>% # Keep only necessary columns if desired
+  kable()
+```
+
+Overzicht van som van reads per family known families:
+
+```{r read-counts-insecta-sl-subset-known-family}
+tidy_physeq_known_family %>%
   tidytacos::aggregate_taxa(rank = "family") %>%
   tidytacos::everything() %>%
   group_by(family) %>%
@@ -980,10 +1080,38 @@ tidy_physeq_insecta %>%
   kable()
 ```
 
+Overzicht van som van reads per genus known genera:
+
+```{r read-counts-insecta-sl-subset-known-genera}
+tidy_physeq_known_genera %>%
+  tidytacos::aggregate_taxa(rank = "genus") %>%
+  tidytacos::everything() %>%
+  group_by(genus) %>%
+  summarise(read_counts = sum(count)) %>%
+  mutate(percentage = round((read_counts / sum(read_counts)) * 100, 2)) %>% # Calculate and round percentage
+  arrange(desc(read_counts)) %>%
+  select(genus, percentage) %>% # Keep only necessary columns if desired
+  kable()
+```
+
 Overzicht van som van reads per species:
 
 ```{r read-counts-insecta-sl-subset-species}
 tidy_physeq_insecta %>%
+  tidytacos::aggregate_taxa(rank = "species") %>%
+  tidytacos::everything() %>%
+  group_by(species) %>%
+  summarise(read_counts = sum(count)) %>%
+  mutate(percentage = round((read_counts / sum(read_counts)) * 100, 2)) %>% # Calculate and round percentage
+  arrange(desc(read_counts)) %>%
+  select(species, percentage) %>% # Keep only necessary columns if desired
+  kable()
+```
+
+Overzicht van som van reads per species known species:
+
+```{r read-counts-insecta-sl-subset-known-species}
+tidy_physeq_known_species %>%
   tidytacos::aggregate_taxa(rank = "species") %>%
   tidytacos::everything() %>%
   group_by(species) %>%
