@@ -109,7 +109,7 @@ load(path_naar_bestand3)
 
 Het bestand dat wordt ingelezen is `r basename(path_naar_bestand)` en `r basename(path_naar_bestand2)` en `r basename(path_naar_bestand3)`.
 
-# Preprocessing stappen
+# Preprocessing stappen, Filter en Selectie
 
 verwijder Gontrode, strooiselstalen, en replicaten
 
@@ -193,55 +193,187 @@ sample_sums(physeq_srs)
 ```
 
 
-## Filter en selectie stappen
-
-<!--Remove samples according to the dataset you want to work with (e.g. without replicates or without a certain land use type)-->
-
-Filter taxongroep etc:
-
-```{r filter}
-
-physeq <- subset_taxa(physeq, phylum != "Human")
-physeq
-
-```
-
-
-
-
-
 ## Conversie voor gebruik in andere packages
 
 Voorbereidende stap: functies om een `phyloseq` object te converteren naar een `vegan matrix` of een `tidytacos` object.
 
 
-```{r psotu2veg-function}
-psotu2veg <- function(physeq) {
-  otu <- phyloseq::otu_table(physeq)
+```{r physeq-to-vegan-physeq-srs}
+psotu2veg <- function(physeq_srs) {
+  otu <- phyloseq::otu_table(physeq_srs)
   if (phyloseq::taxa_are_rows(otu)) {
     otu <- t(otu)
   }
   return(as(otu, "matrix"))
 }
 
+veganobject_physeq_srs <- psotu2veg(physeq_srs)
+
 ```
 
 
-```{r convert-to-vegan-matrix}
-veganobject <- psotu2veg(physeq)
+```{r physeq-to-vegan-physeq-nonrarefied}
+psotu2veg <- function(physeq_nonrarefied) {
+  otu <- phyloseq::otu_table(physeq_nonrarefied)
+  if (phyloseq::taxa_are_rows(otu)) {
+    otu <- t(otu)
+  }
+  return(as(otu, "matrix"))
+}
+
+veganobject_physeq_nonrarefied <- psotu2veg(physeq_nonrarefied)
 ```
+
+```{r physeq-to-vegan-physeq-nonrarefied-merged}
+psotu2veg <- function(physeq_nonrarefied_merged) {
+  otu <- phyloseq::otu_table(physeq_nonrarefied_merged)
+  if (phyloseq::taxa_are_rows(otu)) {
+    otu <- t(otu)
+  }
+  return(as(otu, "matrix"))
+}
+
+veganobject_physeq_nonrarefied_merged <- psotu2veg(physeq_nonrarefied_merged)
+```
+
+
 
 ```{r convert-tidytacos}
-tidy_physeq <- tidytacos::from_phyloseq(physeq)
+tidy_physeq_srs <- tidytacos::from_phyloseq(physeq_srs)
 
-tidy_physeq <- tidy_physeq %>%
+tidy_physeq_nonrarefied <- tidytacos::from_phyloseq(physeq_nonrarefied)
+
+tidy_physeq_nonrarefied_merged <- tidytacos::from_phyloseq(physeq_nonrarefied_merged)
+
+tidy_physeq_known_species <- tidytacos::from_phyloseq(physeq_known_species)
+
+tidy_physeq_known_genera <- tidytacos::from_phyloseq(physeq_known_genera)
+
+tidy_physeq_known_family <- tidytacos::from_phyloseq(physeq_known_family)
+
+tidy_physeq_known_order <- tidytacos::from_phyloseq(physeq_known_order)
+
+tidy_physeq_known_class <- tidytacos::from_phyloseq(physeq_known_class)
+
+
+tidy_physeq_srs_known_species <- tidytacos::from_phyloseq(physeq_srs_known_species)
+
+tidy_physeq_srs_known_genera <- tidytacos::from_phyloseq(physeq_srs_known_genera)
+
+tidy_physeq_srs_known_family <- tidytacos::from_phyloseq(physeq_srs_known_family)
+
+tidy_physeq_srs_known_order <- tidytacos::from_phyloseq(physeq_srs_known_order)
+
+tidy_physeq_srs_known_class <- tidytacos::from_phyloseq(physeq_srs_known_class)
+
+
+tidy_physeq_srs <- tidy_physeq_srs %>%
   remove_empty_samples() %>%
   tidytacos::set_rank_names(
-    rank_names = c("phylum", "class", "order", "family", "genus", "Species")
+    rank_names = c("phylum", "class", "order", "family", "genus", "species")
   ) %>%
   tidytacos::add_alpha() %>%
   tidytacos::add_total_count()
 
+
+tidy_physeq_nonrarefied <- tidy_physeq_nonrarefied %>%
+  remove_empty_samples() %>%
+  tidytacos::set_rank_names(
+    rank_names = c("phylum", "class", "order", "family", "genus", "species")
+  ) %>%
+  tidytacos::add_alpha() %>%
+  tidytacos::add_total_count()
+
+tidy_physeq_nonrarefied_merged <- tidy_physeq_nonrarefied_merged %>%
+  remove_empty_samples() %>%
+  tidytacos::set_rank_names(
+    rank_names = c("phylum", "class", "order", "family", "genus", "species")
+  ) %>%
+  tidytacos::add_alpha() %>%
+  tidytacos::add_total_count()
+
+
+tidy_physeq_known_species <- tidy_physeq_known_species %>%
+  remove_empty_samples() %>%
+  tidytacos::set_rank_names(
+    rank_names = c("phylum", "class", "order", "family", "genus", "species")
+  ) %>%
+  tidytacos::add_alpha() %>%
+  tidytacos::add_total_count()
+
+tidy_physeq_known_genera <- tidy_physeq_known_genera %>%
+  remove_empty_samples() %>%
+  tidytacos::set_rank_names(
+    rank_names = c("phylum", "class", "order", "family", "genus", "species")
+  ) %>%
+  tidytacos::add_alpha() %>%
+  tidytacos::add_total_count()
+
+tidy_physeq_known_family <- tidy_physeq_known_family %>%
+  remove_empty_samples() %>%
+  tidytacos::set_rank_names(
+    rank_names = c("phylum", "class", "order", "family", "genus", "species")
+  ) %>%
+  tidytacos::add_alpha() %>%
+  tidytacos::add_total_count()
+
+tidy_physeq_known_order <- tidy_physeq_known_order %>%
+  remove_empty_samples() %>%
+  tidytacos::set_rank_names(
+    rank_names = c("phylum", "class", "order", "family", "genus", "species")
+  ) %>%
+  tidytacos::add_alpha() %>%
+  tidytacos::add_total_count()
+
+tidy_physeq_known_class <- tidy_physeq_known_class %>%
+  remove_empty_samples() %>%
+  tidytacos::set_rank_names(
+    rank_names = c("phylum", "class", "order", "family", "genus", "species")
+  ) %>%
+  tidytacos::add_alpha() %>%
+  tidytacos::add_total_count()
+
+
+
+tidy_physeq_srs_known_species <- tidy_physeq_srs_known_species %>%
+  remove_empty_samples() %>%
+  tidytacos::set_rank_names(
+    rank_names = c("phylum", "class", "order", "family", "genus", "species")
+  ) %>%
+  tidytacos::add_alpha() %>%
+  tidytacos::add_total_count()
+
+tidy_physeq_srs_known_genera <- tidy_physeq_srs_known_genera %>%
+  remove_empty_samples() %>%
+  tidytacos::set_rank_names(
+    rank_names = c("phylum", "class", "order", "family", "genus", "species")
+  ) %>%
+  tidytacos::add_alpha() %>%
+  tidytacos::add_total_count()
+
+tidy_physeq_srs_known_family <- tidy_physeq_srs_known_family %>%
+  remove_empty_samples() %>%
+  tidytacos::set_rank_names(
+    rank_names = c("phylum", "class", "order", "family", "genus", "species")
+  ) %>%
+  tidytacos::add_alpha() %>%
+  tidytacos::add_total_count()
+
+tidy_physeq_srs_known_order <- tidy_physeq_srs_known_order %>%
+  remove_empty_samples() %>%
+  tidytacos::set_rank_names(
+    rank_names = c("phylum", "class", "order", "family", "genus", "species")
+  ) %>%
+  tidytacos::add_alpha() %>%
+  tidytacos::add_total_count()
+
+tidy_physeq_srs_known_class <- tidy_physeq_srs_known_class %>%
+  remove_empty_samples() %>%
+  tidytacos::set_rank_names(
+    rank_names = c("phylum", "class", "order", "family", "genus", "species")
+  ) %>%
+  tidytacos::add_alpha() %>%
+  tidytacos::add_total_count()
 
 ```
 
