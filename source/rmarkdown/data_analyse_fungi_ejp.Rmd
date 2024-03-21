@@ -523,8 +523,8 @@ print(phyloseq_venn)
 sample_data <- as.data.frame(sample_data(phyloseq_venn))
 
 # Extract unique locations and corresponding protocols
-locations <- unique(sample_data$Locatie)
-protocols <- lapply(locations, function(loc) unique(sample_data$Protocol[sample_data$Locatie == loc]))
+locations <- unique(sample_data$Location)
+protocols <- lapply(locations, function(loc) unique(sample_data$Protocol[sample_data$Location == loc]))
 
 # Initialize vector to store samples to be removed
 samples_to_remove <- character(0)
@@ -532,7 +532,7 @@ samples_to_remove <- character(0)
 # Identify samples to be removed based on conditions
 for (i in seq_along(locations)) {
   if (length(protocols[[i]]) == 1 && protocols[[i]] == "INBO") {
-    samples_to_remove <- c(samples_to_remove, rownames(sample_data[sample_data$Locatie == locations[i], ]))
+    samples_to_remove <- c(samples_to_remove, rownames(sample_data[sample_data$Location == locations[i], ]))
   }
 }
 
@@ -544,19 +544,15 @@ samples_to_remove
 
 
 # Remove samples
-phyloseq_venn_location <- subset_samples_no_zero(phyloseq_venn, Locatie != "Sombreffe")
-phyloseq_venn_location <- subset_samples_no_zero(phyloseq_venn_location, Locatie != "Deurne")
-phyloseq_venn_location <- subset_samples_no_zero(phyloseq_venn_location, Locatie != "Burdinne")
-phyloseq_venn_location <- subset_samples_no_zero(phyloseq_venn_location, Locatie != "Genappe")
-phyloseq_venn_filtered <- subset_samples_no_zero(phyloseq_venn_location, Locatie != "Herentals")
-
+phyloseq_venn_location <- subset_samples_no_zero(phyloseq_venn, Location != "Deurne")
+phyloseq_venn_filtered <- subset_samples_no_zero(phyloseq_venn_location, Location != "Herentals")
 
 # Make venn_diagram per
 # Per locatie
 phyloseq_venn_filtered_location <- phyloseq_venn_filtered
 
 # List of unique locations
-locations <- unique(sample_data(phyloseq_venn_filtered_location)$Locatie)
+locations <- unique(sample_data(phyloseq_venn_filtered_location)$Location)
 
 # Create an empty list to store the subsetted phyloseq objects
 phyloseq_list <- list()
@@ -564,7 +560,7 @@ phyloseq_list <- list()
 # Loop through each location
 for (loc in locations) {
   # Subset the phyloseq object for the current location
-  phyloseq_sub <- subset_samples_no_zero(phyloseq_venn_filtered_location, Locatie == loc)
+  phyloseq_sub <- subset_samples_no_zero(phyloseq_venn_filtered_location, Location == loc)
   
   # Assign the subsetted phyloseq object to a variable with the location name
   assign(paste0("phyloseq_", loc), phyloseq_sub)
