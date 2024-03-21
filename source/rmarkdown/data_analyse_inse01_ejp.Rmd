@@ -518,10 +518,13 @@ for (location in locations) {
 
 ```
 
-Gekende soorten al dan niet gemist met bepaalde staalname protocollen per locatie
+### Gekende soorten al dan niet gemist met bepaalde staalname protocollen per locatie
 
-```{r Species-detected-with-INBOvsLUCAS, eval=FALSE}
+#### INBO_0_10 vs Lucas
 
+```{r Species-detected-with-INBO_0_10vsLUCAS}
+
+# INBO_0_10 vs Lucas
 
 # Subset only known species
 physeq_known_species <- subset_taxa(physeq, !grepl("_otu", tax_table(physeq)[, "species"]))
@@ -597,6 +600,79 @@ species_inbo_not_lucas <- setdiff(species_names_inbo, species_names_lucas)
 
 
 ```
+#### INBO (INBO_0_10 + INBO_10_30) vs Lucas
+```{r Species-detected-with-INBOvsLUCAS}
+### INBO (INBO_0_10 + INBO_10_30) vs Lucas
+
+
+# Work with ubset only known species
+
+unique(sample_data(physeq_known_species)$Protocol)
+
+locations <- unique(sample_data(physeq_known_species)$Locatie)
+
+# Extract locations with both INBO_0_10 and Lucas protocols
+locations_with_lucas <- unique(sample_data(physeq_known_species)$Locatie[sample_data(physeq_known_species)$Protocol == "Lucas"])
+
+# Comparison of Detection Methods
+for (loc in locations) {
+  # Skip locations where Lucas protocol doesn't exist
+  if (!(loc %in% locations_with_lucas)) {
+    next
+  }
+  
+  # Subset phyloseq object for the current location
+  physeq_loc <- subset_samples(physeq_known_species, Locatie == loc)
+
+  
+  # Subset OTU table for INBO_0_10 method
+  otu_table_inbo <- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol == "INBO"]
+
+# Get OTU IDs detected using INBO_0_10 method
+  otu_ids_inbo <- rownames(otu_table_inbo)[apply(otu_table_inbo, 1, function(x) sum(x) > 0)]
+
+# Subset OTU table for LUCAS method
+  otu_table_lucas <- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol == "Lucas"]
+
+# Get OTU IDs detected using LUCAS method
+  otu_ids_lucas <- rownames(otu_table_lucas)[apply(otu_table_lucas, 1, function(x) sum(x) > 0)]
+
+  
+  # Get species names corresponding to OTU IDs detected using INBO method
+  species_names_inbo <- tax_table(physeq_loc)[otu_ids_inbo, "species"]
+
+  # Check if there are OTU IDs detected using INBO_0_10 method
+  if (length(otu_ids_inbo) == 0) {
+  # If no OTU IDs detected using INBO method, assign a placeholder value
+  species_names_inbo <- character(0)  # Or any appropriate placeholder
+  }
+
+  # Check if there are OTU IDs detected using LUCAS method
+  if (length(otu_ids_lucas) == 0) {
+  # If no OTU IDs detected using LUCAS method, assign a placeholder value
+  species_names_lucas <- character(0)  # Or any appropriate placeholder
+  } else {
+  # Get species names corresponding to OTU IDs detected using LUCAS method
+  species_names_lucas <- tax_table(physeq_loc)[otu_ids_lucas, "species"]
+  }
+
+  # Find species detected with INBO_0_10 but not LUCAS
+  species_inbo_not_lucas <- setdiff(species_names_inbo, species_names_lucas)
+
+  
+  if (length(species_inbo_not_lucas) == 0) {
+    cat("Location:", loc, "\n")
+    cat("No species detected using INBO that are not detected using LUCAS.\n\n")
+  } else {
+    cat("Location:", loc, "\n")
+    cat("Species detected using INBO but not LUCAS:", paste(species_inbo_not_lucas, collapse = ", "), "\n\n")
+  }
+}
+
+```
+
+
+
 
 Unieke en gedeelde taxa per landgebruik:
 
