@@ -456,6 +456,11 @@ samples_to_remove
 
 
 # Remove samples
+
+# Sombreffe, Burdinne, en Genappe vallen af tijdens de aanmaak van het rarefied phyloseq object, omdat die minder reads hadden dan de gekozen threshold. Zetten we deze threshold lager, of indien we werken met de non-rarefied versie, dan krijgen we voor alle 9 locaties Venn diagrammen. We kunnen hier met spelen en deze verschillende opties eens testen en Venn diagrammen vergelijken. 
+
+# Onderstaande beter herschrijven zodat hij automatisch de samples in samples_to_remove verwijderd, in plaats van dat je ze hieronder manueel moet ingeven
+
 phyloseq_venn_location <- subset_samples_no_zero(phyloseq_venn, Locatie != "Sombreffe")
 phyloseq_venn_location <- subset_samples_no_zero(phyloseq_venn_location, Locatie != "Deurne")
 phyloseq_venn_location <- subset_samples_no_zero(phyloseq_venn_location, Locatie != "Burdinne")
@@ -529,6 +534,8 @@ sample_data <- sample_data(physeq_known_species)
 head(sample_data)
 
 unique(sample_data(physeq_known_species)$Protocol2)
+
+locations <- unique(sample_data(physeq_known_species)$Locatie)
 
 # Extract locations with both INBO_0_10 and Lucas protocols
 locations_with_lucas <- unique(sample_data(physeq_known_species)$Locatie[sample_data(physeq_known_species)$Protocol2 == "Lucas"])
