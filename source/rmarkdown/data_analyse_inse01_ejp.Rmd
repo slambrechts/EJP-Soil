@@ -459,13 +459,8 @@ samples_to_remove
 
 # Sombreffe, Burdinne, en Genappe vallen af tijdens de aanmaak van het rarefied phyloseq object, omdat die minder reads hadden dan de gekozen threshold. Zetten we deze threshold lager, of indien we werken met de non-rarefied versie, dan krijgen we voor alle 9 locaties Venn diagrammen. We kunnen hier met spelen en deze verschillende opties eens testen en Venn diagrammen vergelijken. 
 
-# Onderstaande beter herschrijven zodat hij automatisch de samples in samples_to_remove verwijderd, in plaats van dat je ze hieronder manueel moet ingeven
+phyloseq_venn_filtered <- subset_samples_no_zero(phyloseq_venn, !(Naam %in% samples_to_remove))
 
-phyloseq_venn_location <- subset_samples_no_zero(phyloseq_venn, Locatie != "Sombreffe")
-phyloseq_venn_location <- subset_samples_no_zero(phyloseq_venn_location, Locatie != "Deurne")
-phyloseq_venn_location <- subset_samples_no_zero(phyloseq_venn_location, Locatie != "Burdinne")
-phyloseq_venn_location <- subset_samples_no_zero(phyloseq_venn_location, Locatie != "Genappe")
-phyloseq_venn_filtered <- subset_samples_no_zero(phyloseq_venn_location, Locatie != "Herentals")
 
 
 # Make venn_diagram per
