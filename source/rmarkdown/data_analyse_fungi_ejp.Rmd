@@ -597,6 +597,15 @@ for (location in locations) {
 
 
 ```
+### Gekende soorten al dan niet gemist met bepaalde staalname protocollen per locatie
+#### INBO_0_10 vs Lucas
+```{r Species-detected-with-INBO_0_10vsLUCAS}
+
+# INBO_0_10 vs Lucas
+
+
+
+```
 
 
 Unieke en gedeelde taxa per Protocol2 over heel de dataset:
