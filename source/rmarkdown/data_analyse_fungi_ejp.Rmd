@@ -513,8 +513,8 @@ filter(!present) %>%
 
 ## Unieke en gedeelde taxa per staalname protocol per locatie:
 
-
-```{r detectie-otus-staalname-protocol}
+### 1. Alle soorten 
+```{r detectie-otus-staalname-protocol-allesoorten}
 
 # Your original phyloseq object (replace with your actual object)
 phyloseq_venn <- physeq_srs
@@ -599,6 +599,98 @@ for (location in locations) {
 
 
 ```
+
+### 2. Gekende soorten
+```{r detectie-otus-staalname-protocol-gekendesoorten}
+
+# Subset only known species
+physeq_srs_known_species
+
+# Your original phyloseq object (replace with your actual object)
+phyloseq_species_venn <- physeq_srs_known_species
+
+print(phyloseq_species_venn)
+
+# Extract sample data
+sample_data <- as.data.frame(sample_data(phyloseq_species_venn))
+
+# Extract unique locations and corresponding protocols
+locations <- unique(sample_data$Location)
+protocols <- lapply(locations, function(loc) unique(sample_data$Protocol[sample_data$Location == loc]))
+
+# Initialize vector to store samples to be removed
+samples_to_remove <- character(0)
+
+# Identify samples to be removed based on conditions
+for (i in seq_along(locations)) {
+  if (length(protocols[[i]]) == 1 && protocols[[i]] == "INBO") {
+    samples_to_remove <- c(samples_to_remove, rownames(sample_data[sample_data$Location == locations[i], ]))
+  }
+}
+
+# Remove duplicates
+samples_to_remove <- unique(samples_to_remove)
+
+# Which samples need to be removed?
+samples_to_remove
+
+
+# Remove samples
+phyloseq_species_venn_filtered <- subset_samples_no_zero(phyloseq_species_venn, !(Name %in% samples_to_remove))
+phyloseq_species_venn_filtered <- subset_samples_no_zero(phyloseq_species_venn_filtered, Layer != "litter")
+
+
+# Make venn_diagram per
+# Per locatie
+phyloseq_species_venn__filtered_location <- phyloseq_species_venn_filtered
+
+# List of unique locations
+locations <- unique(sample_data(phyloseq_species_venn__filtered_location)$Location)
+
+# Create an empty list to store the subsetted phyloseq objects
+phyloseq_list <- list()
+
+# Loop through each location
+for (loc in locations) {
+  # Subset the phyloseq object for the current location
+  phyloseq_sub <- subset_samples_no_zero(phyloseq_species_venn__filtered_location, Location == loc)
+  
+  # Assign the subsetted phyloseq object to a variable with the location name
+  assign(paste0("phyloseq_", loc), phyloseq_sub)
+  
+  # Store the subsetted phyloseq object in the list
+  phyloseq_list[[loc]] <- phyloseq_sub
+}
+
+
+# List to store plots
+plots_venn_locations <- list()
+
+
+# Loop over each location
+for (location in locations) {
+  # Create tidy_physeq object
+  tidy_physeq_venn <- tidytacos::from_phyloseq(get(paste0("phyloseq_", location)))
+  
+  # Generate plot with specified size and add title
+  plot <- tidy_physeq_venn %>%
+    tidytacos::tacoplot_venn(Protocol2) +
+    ggtitle(paste("Location:", location)) +
+    expand_limits(x = c(-8, 10), y = c(-5, 5))  # Adjust expansion here
+  
+  # Store plot in the list
+  plots_venn_locations[[location]] <- plot
+}
+
+# Now you can access each plot from the list and display it
+for (location in locations) {
+  print(plots_venn_locations[[location]])
+}
+
+```
+
+
+
 ### Gekende soorten al dan niet gemist met bepaalde staalname protocollen per locatie
 
 
