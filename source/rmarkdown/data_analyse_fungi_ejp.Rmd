@@ -693,6 +693,7 @@ for (location in locations) {
 
 ### Gekende soorten al dan niet gemist met bepaalde staalname protocollen per locatie
 
+#### Species niveau
 
 ```{r Perprocessing Species-detected-with-INBO(_0_10)vsLUCAS or LUCASvsINBO_0_10}
 
@@ -708,15 +709,15 @@ head(tax_table)
 sample_data <- sample_data(physeq_srs_known_species)
 head(sample_data)
 
-unique(sample_data(physeq_known_species)$Protocol2)
+unique(sample_data(physeq_srs_known_species)$Protocol2)
 
-locations <- unique(sample_data(physeq_known_species)$Location)
+locations <- unique(sample_data(physeq_srs_known_species)$Location)
 
 # Extract locations with both INBO and Lucas protocols
-locations_with_lucas <- unique(sample_data(physeq_known_species)$Location[sample_data(physeq_known_species)$Protocol2 == "Lucas"])
+locations_with_lucas <- unique(sample_data(physeq_srs_known_species)$Location[sample_data(physeq_srs_known_species)$Protocol2 == "Lucas"])
 
 ```
-#### INBO_0_10 vs Lucas
+##### INBO_0_10 vs Lucas
 ```{r Species-detected-with-INBO_0_10vsLUCAS}
 
 # INBO_0_10 vs Lucas
@@ -777,7 +778,7 @@ for (loc in locations) {
 }
 
 ```
-#### INBO (INBO_0_10 + INBO_10_30) vs Lucas
+##### INBO (INBO_0_10 + INBO_10_30) vs Lucas
 ```{r Species-detected-with-INBOvsLUCAS}
 ### INBO (INBO_0_10 + INBO_10_30) vs Lucas
 
@@ -838,7 +839,7 @@ for (loc in locations) {
 
 
 ```
-#### Lucas vs INBO_0_10
+##### Lucas vs INBO_0_10
 ```{r Species-detected-with-LUCASvsINBO_0_10}
 
 # Lucas vs INBO_0_10
@@ -899,7 +900,7 @@ for (loc in locations) {
 }
 
 ```
-#### Lucas vs INBO (INBO_0_10 + INBO_10_30)
+##### Lucas vs INBO (INBO_0_10 + INBO_10_30)
 ```{r Species-detected-with-LUCASvsINBO}
 
 # Lucas vs INBO (INBO_0_10 + INBO_10_30)
@@ -960,7 +961,275 @@ for (loc in locations) {
 }
 
 ```
+#### Genus niveau
 
+```{r Perprocessing Genus-detected-with-INBO(_0_10)vsLUCAS or LUCASvsINBO(_0_10)}
+
+# 1. Preprocessing for all comparisons
+
+# Subset only known genus
+physeq_srs_known_genera <- subset_taxa(physeq_srs, !grepl("_otu", tax_table(physeq_srs)[, "Genus"]))
+
+otu_table <- otu_table(physeq_srs_known_genera)
+head(otu_table)
+tax_table <- tax_table(physeq_srs_known_genera)
+head(tax_table)
+sample_data <- sample_data(physeq_srs_known_genera)
+head(sample_data)
+
+unique(sample_data(physeq_srs_known_genera)$Protocol2)
+
+locations <- unique(sample_data(physeq_srs_known_genera)$Location)
+
+# Extract locations with both INBO and Lucas protocols
+locations_with_lucas <- unique(sample_data(physeq_srs_known_genera)$Location[sample_data(physeq_srs_known_genera)$Protocol2 == "Lucas"])
+
+
+```
+##### INBO_0_10 vs Lucas
+```{r Genus-detected-with-INBO_0_10vsLUCAS}
+
+# INBO_0_10 vs Lucas
+
+# Comparison of Detection Methods
+for (loc in locations) {
+  # Skip locations where Lucas protocol doesn't exist
+  if (!(loc %in% locations_with_lucas)) {
+    next
+  }
+  
+  # Subset phyloseq object for the current location
+  physeq_loc <- subset_samples(physeq_srs_known_genera, Location == loc)
+
+  
+  # Subset OTU table for INBO_0_10 method
+  otu_table_inbo <- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol2 == "INBO_0_10"]
+
+# Get OTU IDs detected using INBO_0_10 method
+  otu_ids_inbo <- rownames(otu_table_inbo)[apply(otu_table_inbo, 1, function(x) sum(x) > 0)]
+
+# Subset OTU table for LUCAS method
+  otu_table_lucas <- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol2 == "Lucas"]
+
+# Get OTU IDs detected using LUCAS method
+  otu_ids_lucas <- rownames(otu_table_lucas)[apply(otu_table_lucas, 1, function(x) sum(x) > 0)]
+
+  
+  # Get genus names corresponding to OTU IDs detected using INBO_0_10 method
+  genus_names_inbo <- tax_table(physeq_loc)[otu_ids_inbo, "Genus"]
+
+  # Check if there are OTU IDs detected using INBO_0_10 method
+  if (length(otu_ids_inbo) == 0) {
+  # If no OTU IDs detected using INBO_0_10 method
+  genus_names_inbo <- character(0)
+  }
+
+  # Check if there are OTU IDs detected using LUCAS method
+  if (length(otu_ids_lucas) == 0) {
+  # If no OTU IDs detected using LUCAS method
+  genus_names_lucas <- character(0)
+  } else {
+  # Get genus names corresponding to OTU IDs detected using LUCAS method
+  genus_names_lucas <- tax_table(physeq_loc)[otu_ids_lucas, "Genus"]
+  }
+
+# Find genus detected with INBO_0_10 but not LUCAS
+  genus_inbo_not_lucas <- setdiff(genus_names_inbo, genus_names_lucas)
+
+  
+  if (length(genus_inbo_not_lucas) == 0) {
+    cat("Location:", loc, "\n")
+    cat("No genus detected using INBO_0_10 that are not detected using LUCAS.\n\n")
+  } else {
+    cat("Location:", loc, "\n")
+    cat("Genus detected using INBO_0_10 but not LUCAS:", paste(genus_inbo_not_lucas, collapse = ", "), "\n\n")
+  }
+}
+
+```
+##### INBO (INBO_0_10 + INBO_10_30) vs Lucas
+```{r Genus-detected-with-INBOvsLUCAS}
+### INBO (INBO_0_10 + INBO_10_30) vs Lucas
+
+# Comparison of Detection Methods
+for (loc in locations) {
+  # Skip locations where Lucas protocol doesn't exist
+  if (!(loc %in% locations_with_lucas)) {
+    next
+  }
+  
+  # Subset phyloseq object for the current location
+  physeq_loc <- subset_samples(physeq_srs_known_genera, Location == loc)
+
+  
+  # Subset OTU table for INBO method
+  otu_table_inbo <- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol == "INBO"]
+
+# Get OTU IDs detected using INBO method
+  otu_ids_inbo <- rownames(otu_table_inbo)[apply(otu_table_inbo, 1, function(x) sum(x) > 0)]
+
+# Subset OTU table for LUCAS method
+  otu_table_lucas <- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol == "Lucas"]
+
+# Get OTU IDs detected using LUCAS method
+  otu_ids_lucas <- rownames(otu_table_lucas)[apply(otu_table_lucas, 1, function(x) sum(x) > 0)]
+
+  
+  # Get genus names corresponding to OTU IDs detected using INBO method
+  species_names_inbo <- tax_table(physeq_loc)[otu_ids_inbo, "Genus"]
+
+  # Check if there are OTU IDs detected using INBO method
+  if (length(otu_ids_inbo) == 0) {
+  # If no OTU IDs detected using INBO method
+  genus_names_inbo <- character(0)  
+  }
+
+  # Check if there are OTU IDs detected using LUCAS method
+  if (length(otu_ids_lucas) == 0) {
+  # If no OTU IDs detected using LUCAS method
+  genus_names_lucas <- character(0)
+  } else {
+  # Get genus names corresponding to OTU IDs detected using LUCAS method
+  genus_names_lucas <- tax_table(physeq_loc)[otu_ids_lucas, "Genus"]
+  }
+
+  # Find genus detected with INBO but not LUCAS
+  genus_inbo_not_lucas <- setdiff(genus_names_inbo, genus_names_lucas)
+
+  
+  if (length(genus_inbo_not_lucas) == 0) {
+    cat("Location:", loc, "\n")
+    cat("No genus detected using INBO that are not detected using LUCAS.\n\n")
+  } else {
+    cat("Location:", loc, "\n")
+    cat("Genus detected using INBO but not LUCAS:", paste(genus_inbo_not_lucas, collapse = ", "), "\n\n")
+  }
+}
+
+
+```
+##### Lucas vs INBO_0_10
+```{r Genus-detected-with-LUCASvsINBO_0_10}
+
+# Lucas vs INBO_0_10
+
+# Comparison of Detection Methods
+for (loc in locations) {
+  # Skip locations where Lucas protocol doesn't exist
+  if (!(loc %in% locations_with_lucas)) {
+    next
+  }
+  
+  # Subset phyloseq object for the current location
+  physeq_loc <- subset_samples(physeq_srs_known_genera, Location == loc)
+
+  
+  # Subset OTU table for INBO_0_10 method
+  otu_table_inbo <- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol2 == "INBO_0_10"]
+
+# Get OTU IDs detected using INBO_0_10 method
+  otu_ids_inbo <- rownames(otu_table_inbo)[apply(otu_table_inbo, 1, function(x) sum(x) > 0)]
+
+# Subset OTU table for LUCAS method
+  otu_table_lucas <- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol2 == "Lucas"]
+
+# Get OTU IDs detected using LUCAS method
+  otu_ids_lucas <- rownames(otu_table_lucas)[apply(otu_table_lucas, 1, function(x) sum(x) > 0)]
+
+  
+  # Get genus names corresponding to OTU IDs detected using INBO_0_10 method
+  genus_names_inbo <- tax_table(physeq_loc)[otu_ids_inbo, "Genus"]
+
+  # Check if there are OTU IDs detected using INBO_0_10 method
+  if (length(otu_ids_inbo) == 0) {
+  # If no OTU IDs detected using INBO_0_10 method
+  genus_names_inbo <- character(0)  # Or any appropriate placeholder
+  }
+
+  # Check if there are OTU IDs detected using LUCAS method
+  if (length(otu_ids_lucas) == 0) {
+  # If no OTU IDs detected using LUCAS method, assign a placeholder value
+  genus_names_lucas <- character(0)
+  } else {
+  # Get species names corresponding to OTU IDs detected using LUCAS method
+  genus_names_lucas <- tax_table(physeq_loc)[otu_ids_lucas, "Genus"]
+  }
+
+# Find genus detected with LUCAS but not INBO_0_10
+  genus_lucas_not_inbo <- setdiff(genus_names_lucas, genus_names_inbo)
+
+  
+  if (length(genus_lucas_not_inbo) == 0) {
+    cat("Location:", loc, "\n")
+    cat("No species detected using LUCAS that are not detected using INBO_0_10.\n\n")
+  } else {
+    cat("Location:", loc, "\n")
+    cat("Species detected using LUCAS but not INBO_0_10:", paste(genus_lucas_not_inbo, collapse = ", "), "\n\n")
+  }
+}
+
+```
+##### Lucas vs INBO (INBO_0_10 + INBO_10_30)
+```{r Genus-detected-with-LUCASvsINBO}
+
+# Lucas vs INBO (INBO_0_10 + INBO_10_30)
+
+# Comparison of Detection Methods
+for (loc in locations) {
+  # Skip locations where Lucas protocol doesn't exist
+  if (!(loc %in% locations_with_lucas)) {
+    next
+  }
+  
+  # Subset phyloseq object for the current location
+  physeq_loc <- subset_samples(physeq_srs_known_genera, Location == loc)
+
+  
+  # Subset OTU table for INBO method
+  otu_table_inbo <- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol == "INBO"]
+
+# Get OTU IDs detected using INBO method
+  otu_ids_inbo <- rownames(otu_table_inbo)[apply(otu_table_inbo, 1, function(x) sum(x) > 0)]
+
+# Subset OTU table for LUCAS method
+  otu_table_lucas <- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol == "Lucas"]
+
+# Get OTU IDs detected using LUCAS method
+  otu_ids_lucas <- rownames(otu_table_lucas)[apply(otu_table_lucas, 1, function(x) sum(x) > 0)]
+
+  
+  # Get genus names corresponding to OTU IDs detected using INBO method
+  genus_names_inbo <- tax_table(physeq_loc)[otu_ids_inbo, "Genus"]
+
+  # Check if there are OTU IDs detected using INBO_0_10 method
+  if (length(otu_ids_inbo) == 0) {
+  # If no OTU IDs detected using INBO method
+  genus_names_inbo <- character(0)
+  }
+
+  # Check if there are OTU IDs detected using LUCAS method
+  if (length(otu_ids_lucas) == 0) {
+  # If no OTU IDs detected using LUCAS method
+  species_names_lucas <- character(0)
+  } else {
+  # Get genus names corresponding to OTU IDs detected using LUCAS method
+  genus_names_lucas <- tax_table(physeq_loc)[otu_ids_lucas, "Genus"]
+  }
+
+  # Find species detected with LUCAS but not INBO
+  genus_lucas_not_inbo <- setdiff(genus_names_lucas, genus_names_inbo)
+
+  
+  if (length(genus_lucas_not_inbo) == 0) {
+    cat("Location:", loc, "\n")
+    cat("No genus detected using LUCAS that are not detected using INBO.\n\n")
+  } else {
+    cat("Location:", loc, "\n")
+    cat("Genus detected using LUCAS but not INBO:", paste(genus_lucas_not_inbo, collapse = ", "), "\n\n")
+  }
+}
+
+```
 Unieke en gedeelde taxa per Protocol2 over heel de dataset:
 
 ```{r}

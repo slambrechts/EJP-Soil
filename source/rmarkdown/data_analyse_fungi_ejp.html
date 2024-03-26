@@ -2794,6 +2794,8 @@ for (location in locations) {
 </div>
 <div id="gekende-soorten-al-dan-niet-gemist-met-bepaalde-staalname-protocollen-per-locatie" class="section level3" number="3.4.3">
 <h3><span class="header-section-number">3.4.3</span> Gekende soorten al dan niet gemist met bepaalde staalname protocollen per locatie</h3>
+<div id="species-niveau" class="section level4" number="3.4.3.1">
+<h4><span class="header-section-number">3.4.3.1</span> Species niveau</h4>
 <pre class="r"><code># 1. Preprocessing for all comparisons
 
 # Subset only known species
@@ -2923,14 +2925,14 @@ head(sample_data)</code></pre>
 ## Burdinne_0_10               Yes     No       No   No                     No
 ## Burdinne_10_30              Yes     No       No   No                     No
 ## Burdinne_Lucas              Yes     No       No   No                     No</code></pre>
-<pre class="r"><code>unique(sample_data(physeq_known_species)$Protocol2)</code></pre>
+<pre class="r"><code>unique(sample_data(physeq_srs_known_species)$Protocol2)</code></pre>
 <pre><code>## [1] &quot;INBO_0_10&quot;  &quot;INBO_10_30&quot; &quot;Lucas&quot;      &quot;strooisel&quot;</code></pre>
-<pre class="r"><code>locations &lt;- unique(sample_data(physeq_known_species)$Location)
+<pre class="r"><code>locations &lt;- unique(sample_data(physeq_srs_known_species)$Location)
 
 # Extract locations with both INBO and Lucas protocols
-locations_with_lucas &lt;- unique(sample_data(physeq_known_species)$Location[sample_data(physeq_known_species)$Protocol2 == &quot;Lucas&quot;])</code></pre>
-<div id="inbo_0_10-vs-lucas" class="section level4" number="3.4.3.1">
-<h4><span class="header-section-number">3.4.3.1</span> INBO_0_10 vs Lucas</h4>
+locations_with_lucas &lt;- unique(sample_data(physeq_srs_known_species)$Location[sample_data(physeq_srs_known_species)$Protocol2 == &quot;Lucas&quot;])</code></pre>
+<div id="inbo_0_10-vs-lucas" class="section level5" number="3.4.3.1.1">
+<h5><span class="header-section-number">3.4.3.1.1</span> INBO_0_10 vs Lucas</h5>
 <pre class="r"><code># INBO_0_10 vs Lucas
 
 # Comparison of Detection Methods
@@ -3014,8 +3016,8 @@ for (loc in locations) {
 ## Location: Sombreffe 
 ## Species detected using INBO_0_10 but not LUCAS: Remersonia_thermophila, Penicillium_polonicum, Solicoccozyma_terrea, Sporobolomyces_roseus, Chrysosporium_pseudomerdarium, Eucasphaeria_capensis, Dichotomopilus_pratensis, Cistella_albidolutea, Fusarium_venenatum, Hypholoma_fasciculare, Rhizophlyctis_rosea, Ilyonectria_mors-panacis, Chaetomium_acropullum, Metacordyceps_chlamydosporia, Scutellinia_scutellata, Wardomyces_giganteus, Aspergillus_fumigatus, Scedosporium_dehoogii</code></pre>
 </div>
-<div id="inbo-inbo_0_10-inbo_10_30-vs-lucas" class="section level4" number="3.4.3.2">
-<h4><span class="header-section-number">3.4.3.2</span> INBO (INBO_0_10 + INBO_10_30) vs Lucas</h4>
+<div id="inbo-inbo_0_10-inbo_10_30-vs-lucas" class="section level5" number="3.4.3.1.2">
+<h5><span class="header-section-number">3.4.3.1.2</span> INBO (INBO_0_10 + INBO_10_30) vs Lucas</h5>
 <pre class="r"><code>### INBO (INBO_0_10 + INBO_10_30) vs Lucas
 
 # Comparison of Detection Methods
@@ -3099,8 +3101,8 @@ for (loc in locations) {
 ## Location: Sombreffe 
 ## Species detected using INBO but not LUCAS: Remersonia_thermophila, Penicillium_polonicum, Gibberella_intricans, Solicoccozyma_terrea, Colletotrichum_coccodes, Mortierella_amoeboidea, Microdochium_trichocladiopsis, Acremonium_nepalense, Sporobolomyces_roseus, Barnettozyma_californica, Chrysosporium_pseudomerdarium, Eucasphaeria_capensis, Dichotomopilus_pratensis, Cistella_albidolutea, Preussia_flanaganii, Fusarium_venenatum, Hypholoma_fasciculare, Funneliformis_caledonium, Vishniacozyma_heimaeyensis, Rhizophlyctis_rosea, Ilyonectria_mors-panacis, Humicola_nigrescens, Chaetomium_acropullum, Thelebolus_globosus, Metacordyceps_chlamydosporia, Scytalidium_circinatum, Fusicolla_aquaeductuum, Scutellinia_scutellata, Wardomyces_giganteus, Aspergillus_fumigatus, Scedosporium_dehoogii, Talaromyces_infraolivaceus, Holtermanniella_takashimae, Mortierella_sarnyensis</code></pre>
 </div>
-<div id="lucas-vs-inbo_0_10" class="section level4" number="3.4.3.3">
-<h4><span class="header-section-number">3.4.3.3</span> Lucas vs INBO_0_10</h4>
+<div id="lucas-vs-inbo_0_10" class="section level5" number="3.4.3.1.3">
+<h5><span class="header-section-number">3.4.3.1.3</span> Lucas vs INBO_0_10</h5>
 <pre class="r"><code># Lucas vs INBO_0_10
 
 # Comparison of Detection Methods
@@ -3184,8 +3186,8 @@ for (loc in locations) {
 ## Location: Sombreffe 
 ## Species detected using LUCAS but not INBO_0_10: Trichoderma_viride, Trichophyton_ajelloi, Apodus_deciduus, Verticillium_nubilum, Trichoderma_lixii</code></pre>
 </div>
-<div id="lucas-vs-inbo-inbo_0_10-inbo_10_30" class="section level4" number="3.4.3.4">
-<h4><span class="header-section-number">3.4.3.4</span> Lucas vs INBO (INBO_0_10 + INBO_10_30)</h4>
+<div id="lucas-vs-inbo-inbo_0_10-inbo_10_30" class="section level5" number="3.4.3.1.4">
+<h5><span class="header-section-number">3.4.3.1.4</span> Lucas vs INBO (INBO_0_10 + INBO_10_30)</h5>
 <pre class="r"><code># Lucas vs INBO (INBO_0_10 + INBO_10_30)
 
 # Comparison of Detection Methods
@@ -3268,6 +3270,481 @@ for (loc in locations) {
 ## 
 ## Location: Sombreffe 
 ## Species detected using LUCAS but not INBO: Trichophyton_ajelloi, Apodus_deciduus, Trichoderma_lixii</code></pre>
+</div>
+</div>
+<div id="genus-niveau" class="section level4" number="3.4.3.2">
+<h4><span class="header-section-number">3.4.3.2</span> Genus niveau</h4>
+<pre class="r"><code># 1. Preprocessing for all comparisons
+
+# Subset only known genus
+physeq_srs_known_genera &lt;- subset_taxa(physeq_srs, !grepl(&quot;_otu&quot;, tax_table(physeq_srs)[, &quot;Genus&quot;]))
+
+otu_table &lt;- otu_table(physeq_srs_known_genera)
+head(otu_table)</code></pre>
+<pre><code>## OTU Table:          [6 taxa and 31 samples]
+##                      taxa are rows
+##         Bredene_0_10 Bredene_10_30 Bredene_Lucas Burdinne_0_10 Burdinne_10_30
+## OTU10              1             0             0             2              0
+## OTU1000            0             0             0             0              0
+## OTU1006            1             1             5             0              0
+## OTU1009            0             0             1             0              0
+## OTU1017            0             0             0             0              0
+## OTU1019            0             0             0             0              0
+##         Burdinne_Lucas Cerfontaine_0_10 Cerfontaine_10_30 Cerfontaine_Lucas
+## OTU10                4                2                 1                 0
+## OTU1000              0               11                11                14
+## OTU1006              0                0                17                18
+## OTU1009              0                0                 1                 1
+## OTU1017              0                0                 0                 0
+## OTU1019              0                5                 6                 5
+##         Deurne_10_30 Diepenbeek_0_10 Diepenbeek_10_30 Diepenbeek_Lucas
+## OTU10              0               0                0                0
+## OTU1000            1               1                2                0
+## OTU1006           11               0                0                0
+## OTU1009            0               0                0                0
+## OTU1017            0               0                0                0
+## OTU1019            0               0                0                0
+##         Diepenbeek_strooisel Genappe_0_10 Genappe_10_30 Genappe_Lucas
+## OTU10                      0            4            17             9
+## OTU1000                    0            0             1             0
+## OTU1006                    0            0             0             0
+## OTU1009                    0            0             1             1
+## OTU1017                    3            0             0             0
+## OTU1019                    0            0             0             0
+##         Herentals_0_10 Herentals_10_30 Marke_0_10 Marke_10_30 Marke_Lucas
+## OTU10                0               0          0           0           0
+## OTU1000              2               7          2           1           1
+## OTU1006              0               2          0           0           0
+## OTU1009              0               0          0           0           0
+## OTU1017              0               0          0           0           0
+## OTU1019              0               0          0           0           0
+##         Molenbeek_0_10 Molenbeek_10_30 Molenbeek_Lucas Seneffe_0_10
+## OTU10                0               0               0            1
+## OTU1000              0               2               1            1
+## OTU1006            333             106             170            0
+## OTU1009              0               0               0            2
+## OTU1017              0               0               0            0
+## OTU1019              0               0               0            0
+##         Seneffe_10_30_1 Seneffe_Lucas Sombreffe_0_10_1 Sombreffe_10_30
+## OTU10                 2             2               27               8
+## OTU1000               2             3                2               1
+## OTU1006               0             0                0               0
+## OTU1009               2             2                3               1
+## OTU1017               0             0                0               0
+## OTU1019               0             0                0               0
+##         Sombreffe_Lucas
+## OTU10                 4
+## OTU1000               1
+## OTU1006               0
+## OTU1009               0
+## OTU1017               0
+## OTU1019               0</code></pre>
+<pre class="r"><code>tax_table &lt;- tax_table(physeq_srs_known_genera)
+head(tax_table)</code></pre>
+<pre><code>## Taxonomy Table:     [6 taxa by 7 taxonomic ranks]:
+##         Domain  Phylum              Class                Order           
+## OTU10   &quot;Fungi&quot; &quot;Ascomycota&quot;        &quot;Sordariomycetes&quot;    &quot;Sordariales&quot;   
+## OTU1000 &quot;Fungi&quot; &quot;Ascomycota&quot;        &quot;Sordariomycetes&quot;    &quot;Sordariales&quot;   
+## OTU1006 &quot;Fungi&quot; &quot;Ascomycota&quot;        &quot;Sordariomycetes&quot;    &quot;Hypocreales&quot;   
+## OTU1009 &quot;Fungi&quot; &quot;Ascomycota&quot;        &quot;Sordariomycetes&quot;    &quot;Sordariales&quot;   
+## OTU1017 &quot;Fungi&quot; &quot;Ascomycota&quot;        &quot;Sordariomycetes&quot;    &quot;Hypocreales&quot;   
+## OTU1019 &quot;Fungi&quot; &quot;Mortierellomycota&quot; &quot;Mortierellomycetes&quot; &quot;Mortierellales&quot;
+##         Family                           Genus          
+## OTU10   &quot;Lasiosphaeriaceae&quot;              &quot;Cladorrhinum&quot; 
+## OTU1000 &quot;Chaetomiaceae&quot;                  &quot;Trichocladium&quot;
+## OTU1006 &quot;Clavicipitaceae&quot;                &quot;Metarhizium&quot;  
+## OTU1009 &quot;Sordariales_fam_Incertae_sedis&quot; &quot;Remersonia&quot;   
+## OTU1017 &quot;Hypocreales_fam_Incertae_sedis&quot; &quot;Brachysporium&quot;
+## OTU1019 &quot;Mortierellaceae&quot;                &quot;Mortierella&quot;  
+##         Species                      
+## OTU10   &quot;Cladorrhinum_foecundissimum&quot;
+## OTU1000 &quot;Trichocladium_opacum&quot;       
+## OTU1006 &quot;Metarhizium_anisopliae&quot;     
+## OTU1009 &quot;Remersonia_thermophila&quot;     
+## OTU1017 &quot;Brachysporium_otu1017&quot;      
+## OTU1019 &quot;Mortierella_hypsicladia&quot;</code></pre>
+<pre class="r"><code>sample_data &lt;- sample_data(physeq_srs_known_genera)
+head(sample_data)</code></pre>
+<pre><code>##                          Name Location DNA_extraction_method Protocol
+## Bredene_0_10     Bredene_0_10  Bredene             Powersoil     INBO
+## Bredene_10_30   Bredene_10_30  Bredene             Powersoil     INBO
+## Bredene_Lucas   Bredene_Lucas  Bredene             Powersoil    Lucas
+## Burdinne_0_10   Burdinne_0_10 Burdinne             Powersoil     INBO
+## Burdinne_10_30 Burdinne_10_30 Burdinne             Powersoil     INBO
+## Burdinne_Lucas Burdinne_Lucas Burdinne             Powersoil    Lucas
+##                 Protocol2 Layer Ground_cover Land_use EUNIS Vegetation
+## Bredene_0_10    INBO_0_10  0-10     Cropland Cropland    V1       Corn
+## Bredene_10_30  INBO_10_30 10-30     Cropland Cropland    V1       Corn
+## Bredene_Lucas       Lucas  0-20     Cropland Cropland    V1       Corn
+## Burdinne_0_10   INBO_0_10  0-10     Cropland Cropland    V1     Potato
+## Burdinne_10_30 INBO_10_30 10-30     Cropland Cropland    V1     Potato
+## Burdinne_Lucas      Lucas  0-20     Cropland Cropland    V1     Potato
+##                Vegetation2 Vegetation3 Vegetation4 Vegetation5 Processed
+## Bredene_0_10          None        None        None        Mono        No
+## Bredene_10_30         None        None        None        Mono        No
+## Bredene_Lucas         None        None        None        Mono        No
+## Burdinne_0_10         None        None        None        Mono        No
+## Burdinne_10_30        None        None        None        Mono        No
+## Burdinne_Lucas        None        None        None        Mono        No
+##                Weather    Previous_weather Slope Soil_disturbance Ditches
+## Bredene_0_10    Cloudy       Precipitation    No    Soil_wounding      No
+## Bredene_10_30   Cloudy       Precipitation    No    Soil_wounding      No
+## Bredene_Lucas   Cloudy       Precipitation    No    Soil_wounding      No
+## Burdinne_0_10    Sunny Heavy_precipitation    No    Soil_wounding     Yes
+## Burdinne_10_30   Sunny Heavy_precipitation    No    Soil_wounding     Yes
+## Burdinne_Lucas   Sunny Heavy_precipitation    No    Soil_wounding     Yes
+##                Harvest_residues Gravel Charcoal Rust Anthropogenic_material
+## Bredene_0_10                Yes     No       No   No                     No
+## Bredene_10_30               Yes     No       No   No                     No
+## Bredene_Lucas               Yes     No       No   No                     No
+## Burdinne_0_10               Yes     No       No   No                     No
+## Burdinne_10_30              Yes     No       No   No                     No
+## Burdinne_Lucas              Yes     No       No   No                     No</code></pre>
+<pre class="r"><code>unique(sample_data(physeq_srs_known_genera)$Protocol2)</code></pre>
+<pre><code>## [1] &quot;INBO_0_10&quot;  &quot;INBO_10_30&quot; &quot;Lucas&quot;      &quot;strooisel&quot;</code></pre>
+<pre class="r"><code>locations &lt;- unique(sample_data(physeq_srs_known_genera)$Location)
+
+# Extract locations with both INBO and Lucas protocols
+locations_with_lucas &lt;- unique(sample_data(physeq_srs_known_genera)$Location[sample_data(physeq_srs_known_genera)$Protocol2 == &quot;Lucas&quot;])</code></pre>
+<div id="inbo_0_10-vs-lucas-1" class="section level5" number="3.4.3.2.1">
+<h5><span class="header-section-number">3.4.3.2.1</span> INBO_0_10 vs Lucas</h5>
+<pre class="r"><code># INBO_0_10 vs Lucas
+
+# Comparison of Detection Methods
+for (loc in locations) {
+  # Skip locations where Lucas protocol doesn&#39;t exist
+  if (!(loc %in% locations_with_lucas)) {
+    next
+  }
+  
+  # Subset phyloseq object for the current location
+  physeq_loc &lt;- subset_samples(physeq_srs_known_genera, Location == loc)
+
+  
+  # Subset OTU table for INBO_0_10 method
+  otu_table_inbo &lt;- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol2 == &quot;INBO_0_10&quot;]
+
+# Get OTU IDs detected using INBO_0_10 method
+  otu_ids_inbo &lt;- rownames(otu_table_inbo)[apply(otu_table_inbo, 1, function(x) sum(x) &gt; 0)]
+
+# Subset OTU table for LUCAS method
+  otu_table_lucas &lt;- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol2 == &quot;Lucas&quot;]
+
+# Get OTU IDs detected using LUCAS method
+  otu_ids_lucas &lt;- rownames(otu_table_lucas)[apply(otu_table_lucas, 1, function(x) sum(x) &gt; 0)]
+
+  
+  # Get genus names corresponding to OTU IDs detected using INBO_0_10 method
+  genus_names_inbo &lt;- tax_table(physeq_loc)[otu_ids_inbo, &quot;Genus&quot;]
+
+  # Check if there are OTU IDs detected using INBO_0_10 method
+  if (length(otu_ids_inbo) == 0) {
+  # If no OTU IDs detected using INBO_0_10 method
+  genus_names_inbo &lt;- character(0)
+  }
+
+  # Check if there are OTU IDs detected using LUCAS method
+  if (length(otu_ids_lucas) == 0) {
+  # If no OTU IDs detected using LUCAS method
+  genus_names_lucas &lt;- character(0)
+  } else {
+  # Get genus names corresponding to OTU IDs detected using LUCAS method
+  genus_names_lucas &lt;- tax_table(physeq_loc)[otu_ids_lucas, &quot;Genus&quot;]
+  }
+
+# Find genus detected with INBO_0_10 but not LUCAS
+  genus_inbo_not_lucas &lt;- setdiff(genus_names_inbo, genus_names_lucas)
+
+  
+  if (length(genus_inbo_not_lucas) == 0) {
+    cat(&quot;Location:&quot;, loc, &quot;\n&quot;)
+    cat(&quot;No genus detected using INBO_0_10 that are not detected using LUCAS.\n\n&quot;)
+  } else {
+    cat(&quot;Location:&quot;, loc, &quot;\n&quot;)
+    cat(&quot;Genus detected using INBO_0_10 but not LUCAS:&quot;, paste(genus_inbo_not_lucas, collapse = &quot;, &quot;), &quot;\n\n&quot;)
+  }
+}</code></pre>
+<pre><code>## Location: Bredene 
+## Genus detected using INBO_0_10 but not LUCAS: Candida, Rhodotorula, Ustilago, Sporobolomyces, Cephaliophora, Cystofilobasidium, Torula, Agrocybe, Rhizophlyctis, Trechispora, Cercophora, Hymenoscyphus, Preussia, Valsonectria 
+## 
+## Location: Burdinne 
+## Genus detected using INBO_0_10 but not LUCAS: Metarhizium, Filobasidium, Botrytis, Annulohypoxylon, Gymnoascus, Coprinellus, Thermomyces, Monocillium, Pseudallescheria, Podospora, Pyrenochaetopsis, Scedosporium, Beauveria, Lecythophora, Holtermanniella 
+## 
+## Location: Cerfontaine 
+## Genus detected using INBO_0_10 but not LUCAS: Cladorrhinum, Stachybotrys, Auxarthron, Arthrographis, Ustilago, Ramophialophora, Alternaria, Solicoccozyma, Vishniacozyma, Cistella, Coniochaeta, Tausonia, Trichophaeopsis, Rhizophlyctis, Gamsia, Fusariella, Pseudogymnoascus, Mrakia, Ophiosphaerella, Thelebolus, Tetracladium, Holtermanniella 
+## 
+## Location: Diepenbeek 
+## Genus detected using INBO_0_10 but not LUCAS: Trichocladium, Collophora, Umbelopsis, Aureobasidium, Mycosphaerella, Mariannaea, Botryobasidium, Cortinarius, Arthrographis, Inocybe, Rhizodermea, Pochonia, Mycoarthris, Hymenoscyphus, Plectosphaerella, Cephaliophora, Ascobolus, Neonectria, Preussia, Gibberella, Tolypocladium, Hypholoma, Torula, Pseudeurotium, Lactarius, Venturia, Scleroderma, Humicola, Cutaneotrichosporon, Thelebolus, Nadsonia, Metacordyceps, Cephalotrichum, Acremonium, Fusicolla, Pyrenochaetopsis, Alatospora, Clonostachys, Scytalidium, Rhizidium 
+## 
+## Location: Genappe 
+## Genus detected using INBO_0_10 but not LUCAS: Filobasidium, Mycosphaerella, Mycothermus, Alternaria, Powellomyces, Ochroconis, Holtermanniella 
+## 
+## Location: Marke 
+## Genus detected using INBO_0_10 but not LUCAS: Ascobolus, Ganoderma, Neonectria, Cytospora, Preussia, Cadophora, Stropharia, Hymenoscyphus, Syncephalis, Humicola, Cutaneotrichosporon, Sebacina, Devriesia, Lecanicillium, Tetracladium, Lycoperdon 
+## 
+## Location: Molenbeek 
+## Genus detected using INBO_0_10 but not LUCAS: Cercophora, Coprinopsis, Mariannaea, Mycoarthris, Otidea, Glomus, Phallus, Tomentella, Betamyces, Tetragoniomyces, Lecanicillium, Scedosporium 
+## 
+## Location: Seneffe 
+## Genus detected using INBO_0_10 but not LUCAS: Aureobasidium, Mycosphaerella, Schizothecium, Unguiculariopsis, Alternaria, Pyrenophora, Agaricus, Vishniacozyma, Apodus, Minimedusa, Microascus, Sagenomella, Lipomyces, Trechispora, Parasola, Humicola, Devriesia, Lecanicillium, Phaeosphaeria, Tetracladium, Valsonectria 
+## 
+## Location: Sombreffe 
+## Genus detected using INBO_0_10 but not LUCAS: Remersonia, Zymoseptoria, Occultifur, Unguiculariopsis, Sporobolomyces, Lecythophora, Chrysosporium, Neonectria, Dichotomopilus, Cistella, Hypholoma, Chlamydocillium, Rhizophlyctis, Mrakia, Metacordyceps, Scutellinia, Pectenia, Wardomyces, Aspergillus, Scedosporium</code></pre>
+</div>
+<div id="inbo-inbo_0_10-inbo_10_30-vs-lucas-1" class="section level5" number="3.4.3.2.2">
+<h5><span class="header-section-number">3.4.3.2.2</span> INBO (INBO_0_10 + INBO_10_30) vs Lucas</h5>
+<pre class="r"><code>### INBO (INBO_0_10 + INBO_10_30) vs Lucas
+
+# Comparison of Detection Methods
+for (loc in locations) {
+  # Skip locations where Lucas protocol doesn&#39;t exist
+  if (!(loc %in% locations_with_lucas)) {
+    next
+  }
+  
+  # Subset phyloseq object for the current location
+  physeq_loc &lt;- subset_samples(physeq_srs_known_genera, Location == loc)
+
+  
+  # Subset OTU table for INBO method
+  otu_table_inbo &lt;- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol == &quot;INBO&quot;]
+
+# Get OTU IDs detected using INBO method
+  otu_ids_inbo &lt;- rownames(otu_table_inbo)[apply(otu_table_inbo, 1, function(x) sum(x) &gt; 0)]
+
+# Subset OTU table for LUCAS method
+  otu_table_lucas &lt;- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol == &quot;Lucas&quot;]
+
+# Get OTU IDs detected using LUCAS method
+  otu_ids_lucas &lt;- rownames(otu_table_lucas)[apply(otu_table_lucas, 1, function(x) sum(x) &gt; 0)]
+
+  
+  # Get genus names corresponding to OTU IDs detected using INBO method
+  species_names_inbo &lt;- tax_table(physeq_loc)[otu_ids_inbo, &quot;Genus&quot;]
+
+  # Check if there are OTU IDs detected using INBO method
+  if (length(otu_ids_inbo) == 0) {
+  # If no OTU IDs detected using INBO method
+  genus_names_inbo &lt;- character(0)  
+  }
+
+  # Check if there are OTU IDs detected using LUCAS method
+  if (length(otu_ids_lucas) == 0) {
+  # If no OTU IDs detected using LUCAS method
+  genus_names_lucas &lt;- character(0)
+  } else {
+  # Get genus names corresponding to OTU IDs detected using LUCAS method
+  genus_names_lucas &lt;- tax_table(physeq_loc)[otu_ids_lucas, &quot;Genus&quot;]
+  }
+
+  # Find genus detected with INBO but not LUCAS
+  genus_inbo_not_lucas &lt;- setdiff(genus_names_inbo, genus_names_lucas)
+
+  
+  if (length(genus_inbo_not_lucas) == 0) {
+    cat(&quot;Location:&quot;, loc, &quot;\n&quot;)
+    cat(&quot;No genus detected using INBO that are not detected using LUCAS.\n\n&quot;)
+  } else {
+    cat(&quot;Location:&quot;, loc, &quot;\n&quot;)
+    cat(&quot;Genus detected using INBO but not LUCAS:&quot;, paste(genus_inbo_not_lucas, collapse = &quot;, &quot;), &quot;\n\n&quot;)
+  }
+}</code></pre>
+<pre><code>## Location: Bredene 
+## Genus detected using INBO but not LUCAS: Trichocladium, Zymoseptoria, Pseudaleuria, Torula, Gibellulopsis, Stachybotrys, Occultifur, Ramophialophora, Unguiculariopsis, Sporobolomyces, Chrysosporium, Neonectria, Eucasphaeria, Dichotomopilus, Hypholoma, Chlamydocillium, Beauveria, Tausonia, Rhizophlyctis, Mrakia, Ophiosphaerella, Scutellinia, Pectenia, Wardomyces, Scedosporium 
+## 
+## Location: Burdinne 
+## Genus detected using INBO but not LUCAS: Trichocladium, Remersonia, Zymoseptoria, Occultifur, Mycothermus, Ramophialophora, Unguiculariopsis, Sporobolomyces, Lecythophora, Cistella, Sarocladium, Hypholoma, Chlamydocillium, Beauveria, Pseudogymnoascus, Podospora, Scutellinia, Pectenia, Aspergillus, Scedosporium 
+## 
+## Location: Cerfontaine 
+## Genus detected using INBO but not LUCAS: Cladorrhinum, Zymoseptoria, Pseudaleuria, Solicoccozyma, Torula, Stachybotrys, Mycothermus, Ramophialophora, Unguiculariopsis, Sporobolomyces, Chrysosporium, Cistella, Hypholoma, Chlamydocillium, Tausonia, Alternaria, Rhizophlyctis, Pseudogymnoascus, Mrakia, Ophiosphaerella, Pectenia, Wardomyces, Aspergillus 
+## 
+## Location: Diepenbeek 
+## Genus detected using INBO but not LUCAS: Cladorrhinum, Trichocladium, Remersonia, Zymoseptoria, Pseudaleuria, Torula, Mycosphaerella, Gibellulopsis, Stachybotrys, Occultifur, Mycothermus, Ramophialophora, Unguiculariopsis, Sporobolomyces, Plectosphaerella, Lecythophora, Fusarium, Botryotrichum, Chrysosporium, Neonectria, Eucasphaeria, Dichotomopilus, Cistella, Sarocladium, Emericellopsis, Gibberella, Acremonium, Hypholoma, Chlamydocillium, Pseudeurotium, Tausonia, Alternaria, Rhizophlyctis, Chaetomium, Mrakia, Ophiosphaerella, Metacordyceps, Podospora, Scutellinia, Pectenia, Clonostachys, Wardomyces, Scedosporium 
+## 
+## Location: Genappe 
+## Genus detected using INBO but not LUCAS: Trichocladium, Zymoseptoria, Pseudaleuria, Torula, Mycosphaerella, Mycothermus, Unguiculariopsis, Neonectria, Cistella, Sarocladium, Hypholoma, Chlamydocillium, Alternaria, Pseudogymnoascus, Metacordyceps, Scutellinia, Aspergillus, Scedosporium 
+## 
+## Location: Marke 
+## Genus detected using INBO but not LUCAS: Cladorrhinum, Remersonia, Zymoseptoria, Torula, Gibellulopsis, Stachybotrys, Occultifur, Mycothermus, Unguiculariopsis, Sporobolomyces, Plectosphaerella, Lecythophora, Syncephalis, Chrysosporium, Neonectria, Eucasphaeria, Dichotomopilus, Cistella, Sarocladium, Gibberella, Acremonium, Chlamydocillium, Tausonia, Alternaria, Rhizophlyctis, Mrakia, Ophiosphaerella, Metacordyceps, Scutellinia, Pectenia, Wardomyces, Aspergillus, Scedosporium 
+## 
+## Location: Molenbeek 
+## Genus detected using INBO but not LUCAS: Cladorrhinum, Remersonia, Zymoseptoria, Pseudaleuria, Torula, Mycosphaerella, Gibellulopsis, Stachybotrys, Occultifur, Mycothermus, Ramophialophora, Unguiculariopsis, Sporobolomyces, Botryotrichum, Chrysosporium, Eucasphaeria, Dichotomopilus, Sarocladium, Emericellopsis, Hypholoma, Chlamydocillium, Tausonia, Mrakia, Ophiosphaerella, Scutellinia, Pectenia, Wardomyces, Scedosporium 
+## 
+## Location: Seneffe 
+## Genus detected using INBO but not LUCAS: Zymoseptoria, Torula, Mycosphaerella, Stachybotrys, Occultifur, Unguiculariopsis, Sporobolomyces, Neonectria, Beauveria, Alternaria, Ophiosphaerella, Pectenia, Wardomyces, Scedosporium 
+## 
+## Location: Sombreffe 
+## Genus detected using INBO but not LUCAS: Remersonia, Zymoseptoria, Occultifur, Unguiculariopsis, Sporobolomyces, Lecythophora, Chrysosporium, Neonectria, Dichotomopilus, Cistella, Hypholoma, Chlamydocillium, Rhizophlyctis, Mrakia, Metacordyceps, Scutellinia, Pectenia, Wardomyces, Aspergillus, Scedosporium</code></pre>
+</div>
+<div id="lucas-vs-inbo_0_10-1" class="section level5" number="3.4.3.2.3">
+<h5><span class="header-section-number">3.4.3.2.3</span> Lucas vs INBO_0_10</h5>
+<pre class="r"><code># Lucas vs INBO_0_10
+
+# Comparison of Detection Methods
+for (loc in locations) {
+  # Skip locations where Lucas protocol doesn&#39;t exist
+  if (!(loc %in% locations_with_lucas)) {
+    next
+  }
+  
+  # Subset phyloseq object for the current location
+  physeq_loc &lt;- subset_samples(physeq_srs_known_genera, Location == loc)
+
+  
+  # Subset OTU table for INBO_0_10 method
+  otu_table_inbo &lt;- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol2 == &quot;INBO_0_10&quot;]
+
+# Get OTU IDs detected using INBO_0_10 method
+  otu_ids_inbo &lt;- rownames(otu_table_inbo)[apply(otu_table_inbo, 1, function(x) sum(x) &gt; 0)]
+
+# Subset OTU table for LUCAS method
+  otu_table_lucas &lt;- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol2 == &quot;Lucas&quot;]
+
+# Get OTU IDs detected using LUCAS method
+  otu_ids_lucas &lt;- rownames(otu_table_lucas)[apply(otu_table_lucas, 1, function(x) sum(x) &gt; 0)]
+
+  
+  # Get genus names corresponding to OTU IDs detected using INBO_0_10 method
+  genus_names_inbo &lt;- tax_table(physeq_loc)[otu_ids_inbo, &quot;Genus&quot;]
+
+  # Check if there are OTU IDs detected using INBO_0_10 method
+  if (length(otu_ids_inbo) == 0) {
+  # If no OTU IDs detected using INBO_0_10 method
+  genus_names_inbo &lt;- character(0)  # Or any appropriate placeholder
+  }
+
+  # Check if there are OTU IDs detected using LUCAS method
+  if (length(otu_ids_lucas) == 0) {
+  # If no OTU IDs detected using LUCAS method, assign a placeholder value
+  genus_names_lucas &lt;- character(0)
+  } else {
+  # Get species names corresponding to OTU IDs detected using LUCAS method
+  genus_names_lucas &lt;- tax_table(physeq_loc)[otu_ids_lucas, &quot;Genus&quot;]
+  }
+
+# Find genus detected with LUCAS but not INBO_0_10
+  genus_lucas_not_inbo &lt;- setdiff(genus_names_lucas, genus_names_inbo)
+
+  
+  if (length(genus_lucas_not_inbo) == 0) {
+    cat(&quot;Location:&quot;, loc, &quot;\n&quot;)
+    cat(&quot;No species detected using LUCAS that are not detected using INBO_0_10.\n\n&quot;)
+  } else {
+    cat(&quot;Location:&quot;, loc, &quot;\n&quot;)
+    cat(&quot;Species detected using LUCAS but not INBO_0_10:&quot;, paste(genus_lucas_not_inbo, collapse = &quot;, &quot;), &quot;\n\n&quot;)
+  }
+}</code></pre>
+<pre><code>## Location: Bredene 
+## Species detected using LUCAS but not INBO_0_10: Remersonia, Filobasidium, Septoria, Gongronella, Agaricus, Cistella, Articulospora, Operculomyces, Ilyonectria, Pseudogymnoascus, Metacordyceps, Cephalotrichum, Conocybe, Aspergillus, Lecythophora 
+## 
+## Location: Burdinne 
+## Species detected using LUCAS but not INBO_0_10: Apiotrichum, Absidia, Neonectria, Torula, Tetragoniomyces, Cercophora, Talaromyces, Fusidium, Phialocephala, Wardomyces, Udeniozyma, Leucosporidium, Ascobolus 
+## 
+## Location: Cerfontaine 
+## Species detected using LUCAS but not INBO_0_10: Remersonia, Idriella, Gibellulopsis, Amauroascus, Coprinellus, Minimedusa, Periconia, Geotrichum, Monocillium, Talaromyces, Slooffia 
+## 
+## Location: Diepenbeek 
+## Species detected using LUCAS but not INBO_0_10: Ganoderma, Entoloma, Cytospora, Sagenomella, Phialocephala 
+## 
+## Location: Genappe 
+## Species detected using LUCAS but not INBO_0_10: Remersonia, Colletotrichum, Stachybotrys, Occultifur, Ramophialophora, Sporobolomyces, Fusarium, Botryotrichum, Barnettozyma, Byssonectria, Chrysosporium, Operculomyces, Paramyrothecium, Monocillium, Rhizophlyctis, Talaromyces, Devriesia, Hypomyces, Pectenia, Acaulium, Wardomyces, Leucosporidium 
+## 
+## Location: Marke 
+## Species detected using LUCAS but not INBO_0_10: Pseudaleuria, Westerdykella, Davidhawksworthia, Vishniacozyma, Coprinopsis, Talaromyces 
+## 
+## Location: Molenbeek 
+## Species detected using LUCAS but not INBO_0_10: Trichocladium, Ceratobasidium, Cunninghamella, Slopeiomyces, Penicillium, Cistella, Sagenomella, Aspergillus, Amaurodon, Corticium, Conocybe, Beauveria 
+## 
+## Location: Seneffe 
+## Species detected using LUCAS but not INBO_0_10: Pseudaleuria, Candida, Stephanonectria, Chaetomium, Mycothermus, Microdochium, Ganoderma, Barnettozyma, Trichophyton, Sporothrix, Hypholoma, Chlamydocillium, Periconia, Auricularia, Betamyces, Gamsia, Dictyosporium, Coprinopsis, Mrakia, Thelebolus, Ilyonectria, Scutellinia, Phialocephala, Hymenoscyphus, Byssonectria, Holtermanniella, Ascobolus 
+## 
+## Location: Sombreffe 
+## Species detected using LUCAS but not INBO_0_10: Trichophyton, Apodus, Verticillium, Operculomyces, Talaromyces, Fusidium, Tetracladium, Udeniozyma, Ascobolus</code></pre>
+</div>
+<div id="lucas-vs-inbo-inbo_0_10-inbo_10_30-1" class="section level5" number="3.4.3.2.4">
+<h5><span class="header-section-number">3.4.3.2.4</span> Lucas vs INBO (INBO_0_10 + INBO_10_30)</h5>
+<pre class="r"><code># Lucas vs INBO (INBO_0_10 + INBO_10_30)
+
+# Comparison of Detection Methods
+for (loc in locations) {
+  # Skip locations where Lucas protocol doesn&#39;t exist
+  if (!(loc %in% locations_with_lucas)) {
+    next
+  }
+  
+  # Subset phyloseq object for the current location
+  physeq_loc &lt;- subset_samples(physeq_srs_known_genera, Location == loc)
+
+  
+  # Subset OTU table for INBO method
+  otu_table_inbo &lt;- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol == &quot;INBO&quot;]
+
+# Get OTU IDs detected using INBO method
+  otu_ids_inbo &lt;- rownames(otu_table_inbo)[apply(otu_table_inbo, 1, function(x) sum(x) &gt; 0)]
+
+# Subset OTU table for LUCAS method
+  otu_table_lucas &lt;- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol == &quot;Lucas&quot;]
+
+# Get OTU IDs detected using LUCAS method
+  otu_ids_lucas &lt;- rownames(otu_table_lucas)[apply(otu_table_lucas, 1, function(x) sum(x) &gt; 0)]
+
+  
+  # Get genus names corresponding to OTU IDs detected using INBO method
+  genus_names_inbo &lt;- tax_table(physeq_loc)[otu_ids_inbo, &quot;Genus&quot;]
+
+  # Check if there are OTU IDs detected using INBO_0_10 method
+  if (length(otu_ids_inbo) == 0) {
+  # If no OTU IDs detected using INBO method
+  genus_names_inbo &lt;- character(0)
+  }
+
+  # Check if there are OTU IDs detected using LUCAS method
+  if (length(otu_ids_lucas) == 0) {
+  # If no OTU IDs detected using LUCAS method
+  species_names_lucas &lt;- character(0)
+  } else {
+  # Get genus names corresponding to OTU IDs detected using LUCAS method
+  genus_names_lucas &lt;- tax_table(physeq_loc)[otu_ids_lucas, &quot;Genus&quot;]
+  }
+
+  # Find species detected with LUCAS but not INBO
+  genus_lucas_not_inbo &lt;- setdiff(genus_names_lucas, genus_names_inbo)
+
+  
+  if (length(genus_lucas_not_inbo) == 0) {
+    cat(&quot;Location:&quot;, loc, &quot;\n&quot;)
+    cat(&quot;No genus detected using LUCAS that are not detected using INBO.\n\n&quot;)
+  } else {
+    cat(&quot;Location:&quot;, loc, &quot;\n&quot;)
+    cat(&quot;Genus detected using LUCAS but not INBO:&quot;, paste(genus_lucas_not_inbo, collapse = &quot;, &quot;), &quot;\n\n&quot;)
+  }
+}</code></pre>
+<pre><code>## Location: Bredene 
+## Genus detected using LUCAS but not INBO: Remersonia, Filobasidium, Septoria, Cistella, Articulospora, Operculomyces, Pseudogymnoascus, Metacordyceps, Cephalotrichum, Conocybe, Aspergillus, Lecythophora 
+## 
+## Location: Burdinne 
+## Genus detected using LUCAS but not INBO: Absidia, Neonectria, Torula, Tetragoniomyces, Cercophora, Udeniozyma, Leucosporidium, Ascobolus 
+## 
+## Location: Cerfontaine 
+## Genus detected using LUCAS but not INBO: Idriella, Coprinellus, Periconia, Geotrichum, Monocillium, Slooffia 
+## 
+## Location: Diepenbeek 
+## Genus detected using LUCAS but not INBO: Ganoderma, Entoloma 
+## 
+## Location: Genappe 
+## Genus detected using LUCAS but not INBO: Colletotrichum, Stachybotrys, Ramophialophora, Sporobolomyces, Barnettozyma, Byssonectria, Rhizophlyctis, Pectenia, Acaulium, Wardomyces, Leucosporidium 
+## 
+## Location: Marke 
+## Genus detected using LUCAS but not INBO: Pseudaleuria, Davidhawksworthia, Vishniacozyma, Coprinopsis, Talaromyces 
+## 
+## Location: Molenbeek 
+## Genus detected using LUCAS but not INBO: Slopeiomyces, Amaurodon, Conocybe 
+## 
+## Location: Seneffe 
+## Genus detected using LUCAS but not INBO: Candida, Stephanonectria, Ganoderma, Hypholoma, Chlamydocillium, Periconia, Betamyces, Gamsia, Dictyosporium, Coprinopsis, Mrakia, Phialocephala, Hymenoscyphus, Byssonectria, Holtermanniella, Ascobolus 
+## 
+## Location: Sombreffe 
+## Genus detected using LUCAS but not INBO: Trichophyton, Apodus, Operculomyces, Udeniozyma, Ascobolus</code></pre>
 <p>Unieke en gedeelde taxa per Protocol2 over heel de dataset:</p>
 <pre class="r"><code>tidy_physeq_srs %&gt;%
   tidytacos::tacoplot_venn(Protocol2)</code></pre>
@@ -3296,6 +3773,7 @@ if (system(command = &quot;which ktImportText&quot;,  intern = FALSE, ignore.std
   tidytacos::tacoplot_stack(x = Land_use)</code></pre>
 <pre class="r"><code>tidy_physeq_srs %&gt;%
   tidytacos::tacoplot_stack(x = Protocol2)</code></pre>
+</div>
 </div>
 </div>
 </div>
@@ -3422,8 +3900,8 @@ m_rarefaction &lt;- brm(
 <pre><code>## 
 ## SAMPLING FOR MODEL &#39;anon_model&#39; NOW (CHAIN 1).
 ## Chain 1: 
-## Chain 1: Gradient evaluation took 7.3e-05 seconds
-## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.73 seconds.
+## Chain 1: Gradient evaluation took 8.4e-05 seconds
+## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.84 seconds.
 ## Chain 1: Adjust your expectations accordingly!
 ## Chain 1: 
 ## Chain 1: 
@@ -3440,15 +3918,15 @@ m_rarefaction &lt;- brm(
 ## Chain 1: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 ## Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
 ## Chain 1: 
-## Chain 1:  Elapsed Time: 10.996 seconds (Warm-up)
-## Chain 1:                13.725 seconds (Sampling)
-## Chain 1:                24.721 seconds (Total)
+## Chain 1:  Elapsed Time: 12.247 seconds (Warm-up)
+## Chain 1:                14.483 seconds (Sampling)
+## Chain 1:                26.73 seconds (Total)
 ## Chain 1: 
 ## 
 ## SAMPLING FOR MODEL &#39;anon_model&#39; NOW (CHAIN 2).
 ## Chain 2: 
-## Chain 2: Gradient evaluation took 1.8e-05 seconds
-## Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.18 seconds.
+## Chain 2: Gradient evaluation took 1.9e-05 seconds
+## Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.19 seconds.
 ## Chain 2: Adjust your expectations accordingly!
 ## Chain 2: 
 ## Chain 2: 
@@ -3465,9 +3943,9 @@ m_rarefaction &lt;- brm(
 ## Chain 2: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 ## Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)
 ## Chain 2: 
-## Chain 2:  Elapsed Time: 10.904 seconds (Warm-up)
-## Chain 2:                13.823 seconds (Sampling)
-## Chain 2:                24.727 seconds (Total)
+## Chain 2:  Elapsed Time: 10.926 seconds (Warm-up)
+## Chain 2:                14.143 seconds (Sampling)
+## Chain 2:                25.069 seconds (Total)
 ## Chain 2: 
 ## 
 ## SAMPLING FOR MODEL &#39;anon_model&#39; NOW (CHAIN 3).
@@ -3490,15 +3968,15 @@ m_rarefaction &lt;- brm(
 ## Chain 3: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 ## Chain 3: Iteration: 2000 / 2000 [100%]  (Sampling)
 ## Chain 3: 
-## Chain 3:  Elapsed Time: 10.899 seconds (Warm-up)
-## Chain 3:                13.736 seconds (Sampling)
-## Chain 3:                24.635 seconds (Total)
+## Chain 3:  Elapsed Time: 13.586 seconds (Warm-up)
+## Chain 3:                15.231 seconds (Sampling)
+## Chain 3:                28.817 seconds (Total)
 ## Chain 3: 
 ## 
 ## SAMPLING FOR MODEL &#39;anon_model&#39; NOW (CHAIN 4).
 ## Chain 4: 
-## Chain 4: Gradient evaluation took 1.8e-05 seconds
-## Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.18 seconds.
+## Chain 4: Gradient evaluation took 0.000219 seconds
+## Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 2.19 seconds.
 ## Chain 4: Adjust your expectations accordingly!
 ## Chain 4: 
 ## Chain 4: 
@@ -3515,17 +3993,17 @@ m_rarefaction &lt;- brm(
 ## Chain 4: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 ## Chain 4: Iteration: 2000 / 2000 [100%]  (Sampling)
 ## Chain 4: 
-## Chain 4:  Elapsed Time: 10.401 seconds (Warm-up)
-## Chain 4:                12.469 seconds (Sampling)
-## Chain 4:                22.87 seconds (Total)
+## Chain 4:  Elapsed Time: 13.613 seconds (Warm-up)
+## Chain 4:                16.639 seconds (Sampling)
+## Chain 4:                30.252 seconds (Total)
 ## Chain 4:</code></pre>
-<pre><code>## Warning: There were 10 divergent transitions after warmup. See
+<pre><code>## Warning: There were 11 divergent transitions after warmup. See
 ## https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
 ## to find out why this is a problem and how to eliminate them.</code></pre>
-<pre><code>## Warning: There were 3990 transitions after warmup that exceeded the maximum treedepth. Increase max_treedepth above 10. See
+<pre><code>## Warning: There were 3989 transitions after warmup that exceeded the maximum treedepth. Increase max_treedepth above 10. See
 ## https://mc-stan.org/misc/warnings.html#maximum-treedepth-exceeded</code></pre>
 <pre><code>## Warning: Examine the pairs() plot to diagnose sampling problems</code></pre>
-<pre><code>## Warning: The largest R-hat is 2.83, indicating chains have not mixed.
+<pre><code>## Warning: The largest R-hat is 3.03, indicating chains have not mixed.
 ## Running the chains for more iterations may help. See
 ## https://mc-stan.org/misc/warnings.html#r-hat</code></pre>
 <pre><code>## Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
@@ -3538,7 +4016,7 @@ m_rarefaction &lt;- brm(
 <pre><code>## Warning: Parts of the model have not converged (some Rhats are &gt; 1.05). Be
 ## careful when analysing the results! We recommend running more iterations and/or
 ## setting stronger priors.</code></pre>
-<pre><code>## Warning: There were 10 divergent transitions after warmup. Increasing
+<pre><code>## Warning: There were 11 divergent transitions after warmup. Increasing
 ## adapt_delta above 0.8 may help. See
 ## http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup</code></pre>
 <pre><code>##  Family: gaussian 
@@ -3551,47 +4029,47 @@ m_rarefaction &lt;- brm(
 ## Group-Level Effects: 
 ## ~Name (Number of levels: 31) 
 ##               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## sd(Intercept)    11.31      6.37     0.89    24.72 1.60        7       16
+## sd(Intercept)    12.16      4.95     2.73    20.51 1.25       12       31
 ## 
 ## Population-Level Effects: 
-##                                          Estimate  Est.Error    l-95% CI
-## Intercept                                   80.05      10.04       58.76
-## Land_useForest                              69.53      21.85       19.10
-## Land_useGrassland                           50.83      12.15       25.51
-## Land_useRecreation                          11.23      20.13      -34.17
-## Protocol2INBO_10_30                         14.52      11.44       -7.87
-## Protocol2Lucas                              12.96      14.57      -14.26
-## Protocol2strooisel                       10890.92  124747.62  -168381.27
-## Land_useForest:Protocol2INBO_10_30         -66.41      26.48     -103.73
-## Land_useGrassland:Protocol2INBO_10_30       -5.79      17.15      -49.30
-## Land_useRecreation:Protocol2INBO_10_30      28.17      27.80      -27.34
-## Land_useForest:Protocol2Lucas              -70.63      28.73     -112.06
-## Land_useGrassland:Protocol2Lucas            -6.21      20.73      -37.65
-## Land_useRecreation:Protocol2Lucas            5.58      28.00      -41.91
-## Land_useForest:Protocol2strooisel       -10866.30  124755.45  -219376.37
-## Land_useGrassland:Protocol2strooisel   -673050.52 1637146.85 -4792290.95
-## Land_useRecreation:Protocol2strooisel   -14906.47 1961433.45 -4376089.08
+##                                           Estimate  Est.Error    l-95% CI
+## Intercept                                    83.81       8.82       63.69
+## Land_useForest                               63.42      16.86       35.06
+## Land_useGrassland                            44.57      13.51       19.24
+## Land_useRecreation                           11.20      20.40      -24.74
+## Protocol2INBO_10_30                          11.54      10.94       -6.39
+## Protocol2Lucas                               13.65      13.67      -15.27
+## Protocol2strooisel                       -69847.04  162945.40  -418057.55
+## Land_useForest:Protocol2INBO_10_30          -56.00      21.16      -95.14
+## Land_useGrassland:Protocol2INBO_10_30         0.81      17.98      -37.40
+## Land_useRecreation:Protocol2INBO_10_30       31.83      28.84      -27.05
+## Land_useForest:Protocol2Lucas               -65.73      23.62     -113.09
+## Land_useGrassland:Protocol2Lucas             -6.26      19.17      -50.21
+## Land_useRecreation:Protocol2Lucas             2.83      32.66      -66.71
+## Land_useForest:Protocol2strooisel         69881.82  162937.41  -195002.04
+## Land_useGrassland:Protocol2strooisel     527815.77 2231119.81 -1967081.34
+## Land_useRecreation:Protocol2strooisel  -2040729.32 2215211.25 -8812064.86
 ##                                          u-95% CI Rhat Bulk_ESS Tail_ESS
-## Intercept                                   98.01 1.48        8       12
-## Land_useForest                             102.57 1.73        6       16
-## Land_useGrassland                           73.26 1.25       13       15
-## Land_useRecreation                          44.82 1.43        8       26
-## Protocol2INBO_10_30                         36.03 1.42        8       35
-## Protocol2Lucas                              41.29 1.44        8       13
-## Protocol2strooisel                      219407.65 2.36        5       28
-## Land_useForest:Protocol2INBO_10_30           2.74 1.55        7       39
-## Land_useGrassland:Protocol2INBO_10_30       22.84 1.25       12       32
-## Land_useRecreation:Protocol2INBO_10_30      86.30 1.44        8       17
-## Land_useForest:Protocol2Lucas               -7.74 1.57        7       26
-## Land_useGrassland:Protocol2Lucas            40.36 1.33       10       19
-## Land_useRecreation:Protocol2Lucas           71.69 1.39        9       17
-## Land_useForest:Protocol2strooisel       168404.95 2.36        5       28
-## Land_useGrassland:Protocol2strooisel   1275387.35 1.72        7       25
-## Land_useRecreation:Protocol2strooisel  4030802.03 2.83        5       18
+## Intercept                                   99.49 1.41        9       25
+## Land_useForest                              94.01 1.47        8       43
+## Land_useGrassland                           74.66 1.34       10       35
+## Land_useRecreation                          55.74 1.38       10       36
+## Protocol2INBO_10_30                         33.68 1.25       12       70
+## Protocol2Lucas                              41.32 1.33       10       31
+## Protocol2strooisel                      195068.34 3.03        5       13
+## Land_useForest:Protocol2INBO_10_30         -16.03 1.31       10       28
+## Land_useGrassland:Protocol2INBO_10_30       34.12 1.19       17       79
+## Land_useRecreation:Protocol2INBO_10_30      91.73 1.29       11       32
+## Land_useForest:Protocol2Lucas              -15.48 1.51        7       19
+## Land_useGrassland:Protocol2Lucas            27.85 1.15       21       27
+## Land_useRecreation:Protocol2Lucas           71.04 1.34       10       16
+## Land_useForest:Protocol2strooisel       418128.85 3.03        5       13
+## Land_useGrassland:Protocol2strooisel   5813340.66 2.20        5       20
+## Land_useRecreation:Protocol2strooisel   588414.38 1.45        9       15
 ## 
 ## Family Specific Parameters: 
 ##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## sigma    14.28      4.64     7.12    24.62 1.65        7       21
+## sigma    14.02      6.26     4.94    26.62 1.83        6       40
 ## 
 ## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
 ## and Tail_ESS are effective sample size measures, and Rhat is the potential
@@ -3601,7 +4079,7 @@ m_rarefaction &lt;- brm(
   m_rarefaction,
     effects = c(&quot;Land_use:Protocol2&quot;),
   re.form = NA)</code></pre>
-<p><img src="data:image/png;base64,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Ao3MS3YCFLLNGDSDgaFZthGYsEAj85KdAIVsMwbNYGBolm0EJizQyLxkJ0Ah24xBMxgYmmUbgQkLNDIv2QlQyDZj0AwGhmbZRmDCAo3MS3YCFLLNGDSDgaFZthGYsEAj85KdAIVsMwbNYGBolm0EJizQyLxkJ0Ah24xBMxgYmmUbgQkLNDIv2QlQyDZj0AwGhmbZRmDCAo3MS3YCFLLNGDSDob3ZzTmQGcwECzQyL9kJUMg2s0At0O1ggUbmJTsBCtlmZ1Gg28xgJligkXnJToBCtpkFis1gJligkXnJToBCtpkFis1gJligkXnJToBCtpkFis1gJligkXnJToBCtpkFis1gJligkXnJToBCtpkFis1gJligkXnJToBCtpkFis1gJligkXnJToBCtpkFis1gJligkXnJToBCtpkFis1gJligkXnJToBCtpkFis1gJligkXnJToBCtpkFis1gJligkXnJToBCtpkFis1gJligkXnJToBCtpkFis1gJligkXnJToBCtpkFis1gJligkXnJToBCtpkFis1gJligkXnJToBCtpkFis1gJligkXnJToBCtpkFis1gJligkXnJToBCtpkFis1gJligkXnJToBCtpkFis1gJligkXnJToBCtpkFis1gJligkXnJToBCtpkFis1gJligkXnJToBCtpkFis1gJligkXnJToBCtpkFis1gJligkXnJToBCthnDt6djYFhk2UZgwgKNzEt2AhSyzSxQbAYzwQKNzEt2AhSyzWSLUTTLNgITFmhkXrIToJBtJluMolm2EZiwQCPzkp0AhWwz2WIUzbKNwIQFGpmX7AQoZJvJFqNolm0EJizQyLxkJ0Ah20y2GEWzbCMwYYFG5iU7AQrZZrLFKJplG4EJCzQyL9kJUMg2ky1G0SzbCExYoJF5yU6AQraZbDGKZtlGYMICjcxLdgIUss1ki1E0yzYCE5sI9Js3h2O+85vi1pMPrw+Hr39WPrTxjRrZ40Ixsxhkm8kWo2i2gTPk2ESgD6/XBFrZtJTpxjfqZI8LxcxikG0mW4yi2QbOkGMTgd4ffnd249bwymfHjz4YXrl3EjfqZI8LxcxikG0mW4yi2QbOkGMTgd4a/mD688Pr1Xbo5Z+fwI0G2eNCMbMYZJvJFqNotoEz5NhAoE8+qLnubrU1ereQ6sY3GmSPC8XMYpBtJluM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" width="100%" /></p>
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABUAAAAPACAMAAADDuCPrAAABlVBMVEUAAAAAADoAAGYAOjoAOmYAOpAAZrYAv8QzMzM6AAA6OgA6Ojo6OmY6OpA6ZmY6ZpA6ZrY6kJA6kLY6kNtNTU1NTW5NTY5Nbm5Nbo5NbqtNjshmAABmADpmOgBmOjpmOmZmOpBmZjpmZmZmZpBmkGZmkJBmkLZmkNtmtttmtv9uTU1ubk1ubm5ubo5ujo5ujqtujshuq8huq+R8rgCOTU2Obk2Obm6Ojo6Oq6uOq8iOyOSOyP+QOgCQOjqQZjqQZmaQZpCQkDqQkGaQkLaQtraQttuQ27aQ2/+rbk2rjm6rq46rq8iryOSr5P+2ZgC2Zjq2Zma2kDq2kGa2kJC2tma2tpC2tra2ttu225C229u22/+2///HfP/Ijk3Ijm7Iq27Iq47Iq6vIyKvI5OTI5P/I///bkDrbkGbbtmbbtpDbtrbbttvb27bb29vb2//b///kq27kq47kyI7kyKvkyMjk5Mjk5P/k///r6+v4dm3/tmb/yI7/25D/27b/29v/5Kv/5Mj/5OT//7b//8j//9v//+T///8dy81JAAAACXBIWXMAAB2HAAAdhwGP5fFlAAAgAElEQVR4nO29DZsc1ZmmmQWScCHGaJvCRpbFbEM3DXJ7YY3cM2No6LWHMezaxZrZxWOQ7NkZXBYMRlp6u2WXVCCLUv7uzfjKfCMzI7My87xxnhPnvq/LVn7reTgRt+I7RmMAANiKUewAAACpgkABALYEgQIAbAkCBQDYEgQKALAlCBQAYEsQKADAliBQAIAtQaAAAFuCQAEAtgSBAgBsCQIFANgSBAoAsCUyAv2TAiIx3KBf0qjUi+0KJRCoRSSGG/RLGpV6sV2hBAK1iMRwg35Jo1IvtiuUQKAWkRhu0C9pVOrFdoUSCNQiEsMN+iWNSr3YrlACgVpEYrhBv6RRqRfbFUogUItIDDfolzQq9WK7QgkEahGJ4Qb9kkalXmxXKIFALSIx3KBf0qjUi+0KJRCoRSSGG/RLGpV6sV2hBAK1iMRwg35Jo1IvtiuUQKAWkRhu0C9pVOrFdoUSCNQiEsMN+iWNSr3YrlACgVpEYrhBv6RRqRfbFUogUItIDDfolzQq9WK7QgkEahGJ4Qb9kkalXmxXKIFALSIx3KBf0qjUi+0KJRCoRSSGG/RLGpV6sV2hBAK1iMRwg35Jo1IvtiuUQKAWkRhu0C9pVOrFdoUSCNQiEsMN+iWNSr3YrlACgVpEYrhBv6RRqRfbFUogUItIDDfolzQq9WK7QgkEahGJ4Qb9kkalXmxXKIFALSIx3KBf0qjUi+0KJRCoRSSGG/RLGpV6sV2hBAK1iMRwg35Jo1IvtiuUQKAWkRhu0C9pVOrFdoUSCNQiEsMN+iWNSr3YrlACgVpEYrhBv6RRqRfbFUogUItIDDfolzQq9WK7QgkEahGJ4Qb9kkalXmxXKIFALSIx3KBf0qjUi+0KJRCoRSSGG/RLGpV6sV2hBAK1iMRwg35Jo1IvtiuUQKAWkRhu0C9pVOrFdoUSCNQiEsMN+iWNSr3YrlACgVpEYrhBv6RRqRfbFUogUItIDDfy7Xdjnj5jhUJl+GK7QgkEahGJ4Ua+/RBoQGK7QgkEahGJ4Ub2/dIUZ4PK8MV2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRII1CISw43s+yHQEMR2hRK7CPSb6wcl3/n96s89eu/awcGrn9RPfjt58t2fLHwo9kRRIhLDjez7IdAQ7OCMwbGLQL++diaB1p6tPvWglu5r85+KPVGUiMRwI/t+CDQEOzhjcOwi0HsH3zvLx24eXP5k/ODdg8t3J8uf7x4898n40e8Onv3l3KdiTxQlIjHcyL4fAg3BDs4YHLsI9ObBj7rfvNO8+fW1ctnzm+uFM+/VC6J3Ftwbe6IoEYnhRvb9EGgIdnDG4NhBoI/ebS1GPii2dP7wk+bpVKCNK4sXJgugb3T8WuyJokQkhhvZ90OgIdjeGcNjB4F+c/3yf/vx1Jn1BtFnG0FOBXqzdmaxwv/N9c7tpbEnihKRGG5k3w+BhmB7ZwyPHQTa7EMqBfnN9YPX7hYbNxtDNgKdLqd+fe3y3eJ/X/7g4OC5X0x/5Vs12+cAOCs3bsROAMNiB4HeOyic+Zf3yh1CdkW99WBeoO9V0p1uPUWg0B8IFMKyg0AbZ94sN24aTT5696DhO78373zn9/cOSuk++i174aOQfT9W4UOwvTOGR4Azke4dLDhzuUAv373XLHreZC98DLLvh0BDsLszhkMAgRaLls1JSbPD6jtW4c2T9q/EnihKRGK4kX0/BBqC3Z0xHIII9PLd6ihPy9K98PUxoePZgymxJ4oSkRhuZN8PgYZgd2cMh+0FOj2mszDj4gGeC3uT7thNpfcOWAKNQPb9EGgItnbGANlhCbTejlm5805txKkZl5+JdNPseGoTe6IoEYnhRvb9EGgItnfG8NjtONDX7o4f/LhU5jfXizPex19ea5ZEpwKtTn+vz4WffOfVT9gLH4vs+yHQEGzvjOGxyzbQO/Veo/JUpHvXOi6z1FyAqdroeW/uhKUpsSeKEpEYbmTfD4GGYAdnDI6ddiI9+IeJCl+rN2ZW58L/YtnHioPnX2197JOFD8WeKEpEYriRfT8EGoJdnDE0uCK9RSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJRCoRSSGG9n3Q6AhiO0KJWQECuDPjRuxE8CwkBFo7H9VS0RiuJF9P5ZAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUogUItIDDey74dAQxDbFUp0C/SrD3/6wgsv/O2HX/QTJPZEUSISw43s+yHQEPRjhDToEOjnz49mPP2bHoLEnihKRGK4kX0/BBqCHnSQDEsFemt/1Obxl92DxJ4oSkRiuJF9PwQaAncZJMQSgX56daLMcy/9plp3/+qznz5ZPH/HOUjsiaJEJIYb2fdDoCFwVkFSLAj09P3Clrfbr92aOPTS7fmPBiX2RFEiEsON7Psh0BC4iiAx5gX68M3RuWWbPCeLpec/9gwSe6IoEYnhRvb9EGgIPD2QGgsC/X7X5s5P/y0CTZ3s+yHQEHh6IDU4DtQiEsON7Psh0BDEdoUSCNQiEsON7Psh0BDEdoUSCNQiEsON7Psh0BDEdoUS8wI9/ezDX7d3tz98/uJTrls/K2JPFCUiMdzIvh8CDYG/DdJhYSfSldFjhS5P337hxdutV5yJPVGUiMRwI/t+CDQE/jZIhy6BzrSJQIdD9v0QaAj8bZAOCNQiEsON7Psh0BD42yAdEKhFJIYb2fdDoCHwt0E6IFCLSAw3su+HQEPgb4N0QKAWkRhuZN8PgYbA3wbpgEAtIjHcyL4fAg2Bvw3SAYFaRGK4kX0/BBoCfxukAwK1iMRw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" width="100%" /></p>
 </div>
 </div>
 <div id="otu-counts" class="section level2" number="3.6">
