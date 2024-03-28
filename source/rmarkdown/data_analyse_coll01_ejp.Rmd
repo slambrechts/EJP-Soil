@@ -268,7 +268,7 @@ Kijken of sample data in nederlands of engels staat (om namen te weten variabele
 Check totaal aantal reads (hier de decielen van 0% = minimum tot 100% = maximum):
 
 ```{r quantiles-reads}
-sample_sums(tidy_physeq_full) %>%
+sample_sums(physeq_full) %>%
   quantile(probs = seq(0, 1, 0.1))
 ```
 
@@ -1392,7 +1392,7 @@ tax_table(physeq_known_order) %>%
 
 per family collembola rarefied
 
-```{r per-family-collembola-sl}
+```{r per-family-collembola-rarefied}
 # Count OTUs per family
 tax_table(physeq) %>%
   as.data.frame() %>%
@@ -1419,23 +1419,23 @@ tax_table(physeq_known_family) %>%
 ZITTEN HIER
 
 
-Per genus collembola sl subset
+Per genus collembola rarefied
 
-```{r per-genus-collembola-sl}
+```{r per-genus-collembola-rarefied}
 tax_table(physeq) %>%
   as.data.frame() %>%
-  group_by(genus) %>%
+  group_by(Genus) %>%
   summarise(OTU_Count = n()) %>%
   arrange(desc(OTU_Count)) %>%
   kable()
 ```
 
-Per genus collembola sl subset known genera
+Per genus collembola rarefied known genera
 
-```{r per-known-genus-collembola-sl}
+```{r per-known-genus-collembola-rarefied}
 tax_table(physeq_known_genera) %>%
   as.data.frame() %>%
-  group_by(genus) %>%
+  group_by(Genus) %>%
   summarise(OTU_Count = n()) %>%
   arrange(desc(OTU_Count)) %>%
   kable()
@@ -1443,10 +1443,10 @@ tax_table(physeq_known_genera) %>%
 
 Per species (check of er species zijn met meer dan 1 OTU)
 
-```{r per-species-collembola-sl}
+```{r per-species-collembola-rarefied}
 tax_table(physeq) %>%
   as.data.frame() %>%
-  group_by(species) %>%
+  group_by(Species) %>%
   summarise(OTU_Count = n()) %>%
   filter(OTU_Count > 1) %>%
   arrange(desc(OTU_Count)) %>%
@@ -1455,10 +1455,10 @@ tax_table(physeq) %>%
 
 Per species known species (check of er species zijn met meer dan 1 OTU)
 
-```{r per-known-species-collembola-sl}
+```{r per-known-species-collembola-rarefied}
 tax_table(physeq_known_species) %>%
   as.data.frame() %>%
-  group_by(species) %>%
+  group_by(Species) %>%
   summarise(OTU_Count = n()) %>%
   filter(OTU_Count > 1) %>%
   arrange(desc(OTU_Count)) %>%
@@ -1473,7 +1473,7 @@ Overzicht van som van reads per phylum:
 
 ```{r read-counts-full-dataset-phylum}
 
-tidy_physeq_inse01 %>%
+tidy_physeq_rarefied %>%
   tidytacos::aggregate_taxa(rank = "phylum") %>%
   tidytacos::everything() %>%
   group_by(phylum) %>%
@@ -1489,7 +1489,7 @@ Overzicht van som van reads per class:
 
 ```{r read-counts-full-dataset-class}
 
-tidy_physeq_inse01 %>%
+tidy_physeq_rarefied %>%
   tidytacos::aggregate_taxa(rank = "class") %>%
   tidytacos::everything() %>%
   group_by(class) %>%
@@ -1500,37 +1500,11 @@ tidy_physeq_inse01 %>%
   kable()
 ```
 
-
-Overzicht van som van reads per phylum collembola sl subset:
-
-```{r read-counts-collembola-sl-subset-phylum}
-tidy_physeq_collembola %>%
-  tidytacos::aggregate_taxa(rank = "phylum") %>%
-  tidytacos::everything() %>%
-  group_by(phylum) %>%
-  summarise(read_counts = sum(count)) %>%
-  arrange(desc(read_counts)) %>%
-  kable()
-```
-
-Overzicht van som van reads per class collembola sl subset:
-
-```{r read-counts-collembola-sl-subset-class}
-tidy_physeq_collembola %>%
-  tidytacos::aggregate_taxa(rank = "class") %>%
-  tidytacos::everything() %>%
-  group_by(class) %>%
-  summarise(read_counts = sum(count)) %>%
-  mutate(percentage = round((read_counts / sum(read_counts)) * 100, 2)) %>% # Calculate and round percentage
-  arrange(desc(read_counts)) %>%
-  select(class, percentage) %>% # Keep only necessary columns if desired
-  kable()
-```
 
 Overzicht van som van reads per orde:
 
-```{r read-counts-collembola-sl-subset-order}
-tidy_physeq_collembola %>%
+```{r read-counts-collembola-subset-order}
+tidy_physeq_rarefied %>%
   tidytacos::aggregate_taxa(rank = "order") %>%
   tidytacos::everything() %>%
   group_by(order) %>%
@@ -1543,7 +1517,7 @@ tidy_physeq_collembola %>%
 
 Overzicht van som van reads per orde known orders:
 
-```{r read-counts-collembola-sl-subset-known-order}
+```{r read-counts-collembola-subset-known-order}
 tidy_physeq_known_order %>%
   tidytacos::aggregate_taxa(rank = "order") %>%
   tidytacos::everything() %>%
@@ -1557,8 +1531,8 @@ tidy_physeq_known_order %>%
 
 Overzicht van som van reads per family:
 
-```{r read-counts-collembola-sl-subset-family}
-tidy_physeq_collembola %>%
+```{r read-counts-collembola-subset-family}
+tidy_physeq_rarefied %>%
   tidytacos::aggregate_taxa(rank = "family") %>%
   tidytacos::everything() %>%
   group_by(family) %>%
@@ -1571,7 +1545,7 @@ tidy_physeq_collembola %>%
 
 Overzicht van som van reads per family known families:
 
-```{r read-counts-collembola-sl-subset-known-family}
+```{r read-counts-collembola-subset-known-family}
 tidy_physeq_known_family %>%
   tidytacos::aggregate_taxa(rank = "family") %>%
   tidytacos::everything() %>%
@@ -1586,7 +1560,7 @@ tidy_physeq_known_family %>%
 Overzicht van som van reads per genus:
 
 ```{r read-counts-collembola-sl-subset-genus}
-tidy_physeq_collembola %>%
+tidy_physeq_rarefied %>%
   tidytacos::aggregate_taxa(rank = "genus") %>%
   tidytacos::everything() %>%
   group_by(genus) %>%
@@ -1614,7 +1588,7 @@ tidy_physeq_known_genera %>%
 Overzicht van som van reads per species:
 
 ```{r read-counts-collembola-sl-subset-species}
-tidy_physeq_collembola %>%
+tidy_physeq_rarefied %>%
   tidytacos::aggregate_taxa(rank = "species") %>%
   tidytacos::everything() %>%
   group_by(species) %>%
@@ -1641,7 +1615,9 @@ tidy_physeq_known_species %>%
 
 ## Ordinatie
 
-```{r ordination-phyloseq}
+We hebben de ordinaties reeds apart gedaan dacht ik
+
+```{r ordination-phyloseq, eval=FALSE}
 
 # Perform PCoA
 pcoa_result <- ordinate(physeq_full_rarefied, method = "PCoA", distance = "bray")
