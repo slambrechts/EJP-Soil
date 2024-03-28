@@ -1,0 +1,1675 @@
+---
+title: "EJP-Soil Coll01 data analyse"
+author:
+  - "Sam Lambrechts" 
+  - "Silke De Backer"
+date: "`r Sys.Date()`"
+output:
+  bookdown::html_document2:
+    toc: true
+    toc_float: true
+    code_folding: hide
+editor_options:
+  markdown:
+    wrap: sentence
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+library(here)
+opts_chunk$set(echo = TRUE, out.width = "100%")
+opts_knit$set(root.dir = here::here())
+
+if (!"phyloseq" %in% rownames(installed.packages())) {
+  remotes::install_github("joey711/phyloseq")
+}
+library(phyloseq)
+library(vegan)
+library(ggplot2)
+library(ggrepel)
+library(ggpubr)
+library(gridExtra)
+library(ggbiplot)
+library(factoextra)
+library(dplyr)
+library(rstatix)
+library(dunn.test)
+library(compositions)
+library(sf)
+#### Handig pakket met veel phyloseq add-ons
+if (!"psadd" %in% rownames(installed.packages())) {
+  remotes::install_github("cpauvert/psadd")
+}
+
+library(psadd)
+if (!"tidytacos" %in% rownames(installed.packages())) {
+  remotes::install_github("lebeerlab/tidytacos")
+}
+if (!"ggVennDiagram" %in% rownames(installed.packages())) {
+  install.packages("ggVennDiagram")
+}
+
+library(tidytacos)
+library(glmmTMB)
+library(marginaleffects)
+library(performance)
+library(microbiome)
+
+ejp_folder <- "G:/Gedeelde drives/PRJ_EJP-Soil" # nolint
+```
+
+# Inlezen data
+
+<!--
+In plaats van een .Rdata object, zouden we hier beter de bronbestanden inlezen met de code die hiervoor nodig.
+Met bronbestanden bedoel ik hier gewoon de drie tabelletjes die samen het phyloseq object vormen.
+Deze tabelletjes kunnen best gewoon csv bestanden zijn die we inlezen.
+-->
+
+```{r load-rdata-file}
+path_naar_bestand <- file.path(
+    ejp_folder,
+    "Bodem_biodiversiteit",
+    "03_resultaten",
+    "phyloseq",
+    "Coll01",
+    "physeq_Coll01_Collembola_rar_species.Rdata"
+  )
+
+load(path_naar_bestand)
+
+path_naar_bestand2 <- file.path(
+    ejp_folder,
+    "Bodem_biodiversiteit",
+    "03_resultaten",
+    "phyloseq",
+    "Coll01",
+    "physeq_Coll01_Collembola.Rdata"
+  )
+
+load(path_naar_bestand2)
+
+```
+
+Het bestand dat wordt ingelezen is `r basename(path_naar_bestand)` en `r basename(path_naar_bestand2)`.
+
+# Preprocessing stappen
+
+<!--vergeet HIER niet te starten van de NIET-rarefied versie-->
+
+verwijder Gontrode, strooiselstalen, en replicaten
+
+```{r hernoem-objecten-en-filter-ongewenste-stalen}
+
+physeq <- physeq_Coll01_Collembola_rar.rarefied.species
+physeq_full <- physeq_Coll01_Collembola # non-rarefied dataset
+
+physeq <- subset_samples_no_zero(physeq, Locatie != "Gontrode")
+physeq_full <- subset_samples_no_zero(physeq_full, Naam != c("Gon_0_10", "Gon_10_30"))
+
+physeq <- subset_samples_no_zero(physeq, Protocol2 != "strooisel")
+physeq_full <- subset_samples_no_zero(physeq_full, Protocol2 != "strooisel")
+
+physeq_known_species <- subset_taxa(physeq, !grepl("_otu", tax_table(physeq)[, "Species"]))
+physeq_known_genera <- subset_taxa(physeq, !grepl("_otu", tax_table(physeq)[, "Genus"]))
+physeq_known_family <- subset_taxa(physeq, !grepl("_otu", tax_table(physeq)[, "Family"]))
+physeq_known_order <- subset_taxa(physeq, !grepl("_otu", tax_table(physeq)[, "Order"]))
+
+
+```
+
+physeq is de rarefied versie van de dataset, subsampled op 31655 reads, bevat enkel de klasse Collembola, en bevat alle taxonomische niveaus (Phylum, Class, Order, Family, Genus en Species). physeq full is de niet-rarefied versie van de dataset, bevat ook enkel de klasse Collembola (springstaartjes) en bevat enkel de taxonomische niveau's Class, Genus en Species. 
+
+```{r sample-sums-coll01-collembola-full}
+sample_sums(physeq_full)
+
+```
+
+```{r sample-sums-physeq}
+sample_sums(physeq)
+
+```
+
+
+## Filter en selectie stappen
+
+<!--Remove samples according to the dataset you want to work with (e.g. without replicates or without a certain land use type)-->
+
+Filter taxongroep:
+
+```{r delete-ongewenste-taxa}
+physeq <- subset_taxa(physeq, phylum != "Human")
+
+physeq <- subset_taxa(physeq, phylum != "Unknown")
+
+```
+
+
+## Conversie voor gebruik in andere packages
+
+Voorbereidende stap: functies om een `phyloseq` object te converteren naar een `vegan matrix` of een `tidytacos` object.
+
+
+```{r physeq-to-vegan-physeq}
+psotu2veg <- function(physeq) {
+  otu <- phyloseq::otu_table(physeq)
+  if (phyloseq::taxa_are_rows(otu)) {
+    otu <- t(otu)
+  }
+  return(as(otu, "matrix"))
+}
+
+veganobject <- psotu2veg(physeq)
+
+```
+
+
+```{r physeq-to-vegan-physeq-full}
+psotu2veg <- function(physeq_full) {
+  otu <- phyloseq::otu_table(physeq_full)
+  if (phyloseq::taxa_are_rows(otu)) {
+    otu <- t(otu)
+  }
+  return(as(otu, "matrix"))
+}
+
+veganobject_physeq_full <- psotu2veg(physeq_full)
+```
+
+
+
+```{r convert-tidytacos}
+
+tidy_physeq_full <- tidytacos::from_phyloseq(physeq_full)
+
+tidy_physeq_rarefied <- tidytacos::from_phyloseq(physeq)
+
+tidy_physeq_known_species <- tidytacos::from_phyloseq(physeq_known_species)
+
+tidy_physeq_known_genera <- tidytacos::from_phyloseq(physeq_known_genera)
+
+tidy_physeq_known_family <- tidytacos::from_phyloseq(physeq_known_family)
+
+tidy_physeq_known_order <- tidytacos::from_phyloseq(physeq_known_order)
+
+
+
+tidy_physeq_full <- tidy_physeq_full %>%
+  remove_empty_samples() %>%
+  tidytacos::set_rank_names(
+    rank_names = c("phylum", "class", "order", "family", "genus", "species")
+  ) %>%
+  tidytacos::add_alpha() %>%
+  tidytacos::add_total_count()
+
+
+tidy_physeq_rarefied <- tidy_physeq_rarefied %>%
+  remove_empty_samples() %>%
+  tidytacos::set_rank_names(
+    rank_names = c("phylum", "class", "order", "family", "genus", "species")
+  ) %>%
+  tidytacos::add_alpha() %>%
+  tidytacos::add_total_count()
+
+tidy_physeq_known_species <- tidy_physeq_known_species %>%
+  remove_empty_samples() %>%
+  tidytacos::set_rank_names(
+    rank_names = c("phylum", "class", "order", "family", "genus", "species")
+  ) %>%
+  tidytacos::add_alpha() %>%
+  tidytacos::add_total_count()
+
+tidy_physeq_known_genera <- tidy_physeq_known_genera %>%
+  remove_empty_samples() %>%
+  tidytacos::set_rank_names(
+    rank_names = c("phylum", "class", "order", "family", "genus", "species")
+  ) %>%
+  tidytacos::add_alpha() %>%
+  tidytacos::add_total_count()
+
+tidy_physeq_known_family <- tidy_physeq_known_family %>%
+  remove_empty_samples() %>%
+  tidytacos::set_rank_names(
+    rank_names = c("phylum", "class", "order", "family", "genus", "species")
+  ) %>%
+  tidytacos::add_alpha() %>%
+  tidytacos::add_total_count()
+
+tidy_physeq_known_order <- tidy_physeq_known_order %>%
+  remove_empty_samples() %>%
+  tidytacos::set_rank_names(
+    rank_names = c("phylum", "class", "order", "family", "genus", "species")
+  ) %>%
+  tidytacos::add_alpha() %>%
+  tidytacos::add_total_count()
+
+```
+
+
+# Verkennende analyses
+```{r}
+physeq
+```
+
+```{r}
+physeq_full
+```
+
+
+
+## Sample data
+
+```{r verken-sample-data}
+glimpse(sample_data(physeq) %>% as_tibble())
+```
+
+Kijken of sample data in nederlands of engels staat (om namen te weten variabelen voor analyse hieronder)
+
+Check totaal aantal reads (hier de decielen van 0% = minimum tot 100% = maximum):
+
+```{r quantiles-reads}
+sample_sums(tidy_physeq_full) %>%
+  quantile(probs = seq(0, 1, 0.1))
+```
+
+
+We verkennen ook de verdeling van de samples over de belangrijkste design-variabelen:
+
+```{r designvars}
+tidy_physeq_rarefied$samples %>%
+  count(Protocol2, Landgebruik) %>%
+  kable()
+```
+
+Aantal bodemlocaties:
+
+```{r}
+tidy_physeq_rarefied$samples %>%
+  group_by(Landgebruik) %>%
+  summarise(n_locaties = n_distinct(Naam)) %>%
+  kable()
+
+```
+
+```{r}
+tidy_physeq_rarefied$samples %>%
+  group_by(Protocol2) %>%
+  summarise(n_locaties = n_distinct(Naam)) %>%
+  kable()
+```
+
+De meeste 0-10 cm en 10-30 cm stalen zijn van dezelfde locatie.
+Met deze gepaardheid moeten we rekening houden in analyses.
+
+Vergeet niet Deurne en Herentals te verwijderen voor de staalname protocol vergelijkingen
+
+
+## OTU tabel
+
+```{r verken-otu-data}
+
+
+glimpse(otu_table(physeq) %>% as.data.frame %>% as_tibble())
+```
+
+## Taxonomie tabel
+
+
+```{r verken-taxonomie-data}
+glimpse(tax_table(physeq) %>% as.data.frame %>% as_tibble())
+```
+
+```{r GBIF-check-presence}
+
+Species <- as.vector(tax_table(physeq)[, "Species"])
+Species <- Species[!grepl("_otu", Species)]
+Species <- gsub("_", " ", Species)
+source(here::here("source/r/check_presence.R"))
+gbif_check <- check_presence(Species)
+gbif_check %>%
+filter(!present) %>%
+  kable(caption = "Not present according to GBIF in Western-Europe")
+```
+
+## Unieke en gedeelde taxa per staalname protocol per locatie:
+
+IS DE CODE UIT DE INSECTEN RMD, CODE NOG AANPASSEN NAAR COLLEMBOLA
+
+GEKOZEN PHYLOSEQ OBJECT OP DE EERSTE LIJN (physeq) IS WEL AL JUIST
+
+#### 1. Alle soorten
+```{r detectie-otus-staalname-protocol-allesoorten}
+
+# Your original phyloseq object (replace with your actual object)
+phyloseq_venn <- physeq
+
+print(phyloseq_venn)
+
+# Extract sample data
+sample_data <- as.data.frame(sample_data(phyloseq_venn))
+
+# Extract unique locations and corresponding protocols
+locations <- unique(sample_data$Locatie)
+protocols <- lapply(locations, function(loc) unique(sample_data$Protocol[sample_data$Locatie == loc]))
+
+# Initialize vector to store samples to be removed
+samples_to_remove <- character(0)
+
+# Identify samples to be removed based on conditions
+for (i in seq_along(locations)) {
+  if (length(protocols[[i]]) == 1 && protocols[[i]] == "INBO") {
+    samples_to_remove <- c(samples_to_remove, rownames(sample_data[sample_data$Locatie == locations[i], ]))
+  }
+}
+
+# Remove duplicates
+samples_to_remove <- unique(samples_to_remove)
+
+# Which samples need to be removed?
+samples_to_remove
+
+
+# Remove samples
+
+# Deurne en Herentals moeten we dus zoals steeds verwijderen eerst, maar zijn er tijdens de aanmaak van het rarefied phyloseq object nog stalen weggevallen, omdat die minder reads hadden dan de gekozen threshold? Verwijder ook eerst replicaten als die er zijn
+
+phyloseq_venn_filtered <- subset_samples_no_zero(phyloseq_venn, !(Naam %in% samples_to_remove))
+
+
+
+# Make venn_diagram per
+# Per locatie
+phyloseq_venn_filtered_location <- phyloseq_venn_filtered
+
+# List of unique locations
+locations <- unique(sample_data(phyloseq_venn_filtered_location)$Locatie)
+
+# Create an empty list to store the subsetted phyloseq objects
+phyloseq_list <- list()
+
+# Loop through each location
+for (loc in locations) {
+  # Subset the phyloseq object for the current location
+  phyloseq_sub <- subset_samples_no_zero(phyloseq_venn_filtered_location, Locatie == loc)
+  
+  # Assign the subsetted phyloseq object to a variable with the location name
+  assign(paste0("phyloseq_", loc), phyloseq_sub)
+  
+  # Store the subsetted phyloseq object in the list
+  phyloseq_list[[loc]] <- phyloseq_sub
+}
+
+
+# List to store plots
+plots_venn_locations <- list()
+
+
+# Loop over each location
+for (location in locations) {
+  # Create tidy_physeq object
+  tidy_physeq_venn <- tidytacos::from_phyloseq(get(paste0("phyloseq_", location)))
+  
+  # Generate plot with specified size and add title
+  plot <- tidy_physeq_venn %>%
+    tidytacos::tacoplot_venn(Protocol2) +
+    ggtitle(paste("Location:", location)) +
+    expand_limits(x = c(-8, 10), y = c(-5, 5))  # Adjust expansion here
+  
+  # Store plot in the list
+  plots_venn_locations[[location]] <- plot
+}
+
+# Now you can access each plot from the list and display it
+for (location in locations) {
+  print(plots_venn_locations[[location]])
+}
+
+
+```
+
+#### 2. Enkel gekende soorten
+
+IS DE CODE UIT DE INSECTEN RMD, CODE NOG AANPASSEN NAAR COLLEMBOLA
+
+GEKOZEN PHYLOSEQ OBJECT OP DE EERSTE LIJN (physeq_known_species) IS WEL AL JUIST
+
+
+```{r detectie-otus-staalname-protocol-gekendesoorten}
+
+# Subset only known species
+physeq_known_species_venn <- physeq_known_species
+
+print(physeq_known_species_venn)
+
+# Extract sample data
+sample_data <- as.data.frame(sample_data(physeq_known_species_venn))
+
+# Extract unique locations and corresponding protocols
+locations <- unique(sample_data$Locatie)
+protocols <- lapply(locations, function(loc) unique(sample_data$Protocol[sample_data$Locatie == loc]))
+
+# Initialize vector to store samples to be removed
+samples_to_remove <- character(0)
+
+# Identify samples to be removed based on conditions
+for (i in seq_along(locations)) {
+  if (length(protocols[[i]]) == 1 && protocols[[i]] == "INBO") {
+    samples_to_remove <- c(samples_to_remove, rownames(sample_data[sample_data$Locatie == locations[i], ]))
+  }
+}
+
+# Remove duplicates
+samples_to_remove <- unique(samples_to_remove)
+
+# Which samples need to be removed?
+samples_to_remove
+
+
+# Remove samples
+
+# Deurne en Herentals moeten we dus zoals steeds verwijderen eerst, maar zijn er tijdens de aanmaak van het rarefied phyloseq object nog stalen weggevallen, omdat die minder reads hadden dan de gekozen threshold? Verwijder ook eerst replicaten als die er zijn
+
+phyloseq_venn_filtered <- subset_samples_no_zero(physeq_known_species_venn, !(Naam %in% samples_to_remove))
+
+
+
+# Make venn_diagram per
+# Per locatie
+phyloseq_venn_filtered_location <- phyloseq_venn_filtered
+
+# List of unique locations
+locations <- unique(sample_data(phyloseq_venn_filtered_location)$Locatie)
+
+# Create an empty list to store the subsetted phyloseq objects
+phyloseq_list <- list()
+
+# Loop through each location
+for (loc in locations) {
+  # Subset the phyloseq object for the current location
+  phyloseq_sub <- subset_samples_no_zero(phyloseq_venn_filtered_location, Locatie == loc)
+  
+  # Assign the subsetted phyloseq object to a variable with the location name
+  assign(paste0("phyloseq_", loc), phyloseq_sub)
+  
+  # Store the subsetted phyloseq object in the list
+  phyloseq_list[[loc]] <- phyloseq_sub
+}
+
+
+# List to store plots
+plots_venn_locations <- list()
+
+
+# Loop over each location
+for (location in locations) {
+  # Create tidy_physeq object
+  tidy_physeq_venn <- tidytacos::from_phyloseq(get(paste0("phyloseq_", location)))
+  
+  # Generate plot with specified size and add title
+  plot <- tidy_physeq_venn %>%
+    tidytacos::tacoplot_venn(Protocol2) +
+    ggtitle(paste("Location:", location)) +
+    expand_limits(x = c(-8, 10), y = c(-5, 5))  # Adjust expansion here
+  
+  # Store plot in the list
+  plots_venn_locations[[location]] <- plot
+}
+
+# Now you can access each plot from the list and display it
+for (location in locations) {
+  print(plots_venn_locations[[location]])
+}
+
+```
+
+
+
+### Gekende soorten al dan niet gemist met bepaalde staalname protocollen per locatie
+#### Species niveau
+
+IS DE CODE UIT DE INSECTEN RMD, CODE NOG AANPASSEN NAAR COLLEMBOLA INDIEN NODIG
+
+GEKOZEN PHYLOSEQ OBJECT OP DE EERSTE LIJN (physeq_known_species) IS WEL AL JUIST
+
+
+```{r Perprocessing Species-detected-with-INBO(_0_10)vsLUCAS or LUCASvsINBO_0_10}
+
+# 1. Preprocessing for all comparisons
+
+otu_table <- otu_table(physeq_known_species)
+head(otu_table)
+tax_table <- tax_table(physeq_known_species)
+head(tax_table)
+sample_data <- sample_data(physeq_known_species)
+head(sample_data)
+
+unique(sample_data(physeq_known_species)$Protocol2)
+
+locations <- unique(sample_data(physeq_known_species)$Locatie)
+
+# Extract locations with both INBO and Lucas protocols
+locations_with_lucas <- unique(sample_data(physeq_known_species)$Locatie[sample_data(physeq_known_species)$Protocol2 == "Lucas"])
+
+```
+
+
+##### INBO_0_10 vs Lucas
+
+IS DE CODE UIT DE INSECTEN RMD, CODE NOG AANPASSEN NAAR COLLEMBOLA INDIEN NODIG
+
+
+```{r Species-detected-with-INBO_0_10vsLUCAS}
+
+# INBO_0_10 vs Lucas
+
+# Comparison of Detection Methods
+for (loc in locations) {
+  # Skip locations where Lucas protocol doesn't exist
+  if (!(loc %in% locations_with_lucas)) {
+    next
+  }
+  
+  # Subset phyloseq object for the current location
+  physeq_loc <- subset_samples(physeq_known_species, Locatie == loc)
+
+  
+  # Subset OTU table for INBO_0_10 method
+  otu_table_inbo <- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol2 == "INBO_0_10"]
+
+# Get OTU IDs detected using INBO_0_10 method
+  otu_ids_inbo <- rownames(otu_table_inbo)[apply(otu_table_inbo, 1, function(x) sum(x) > 0)]
+
+# Subset OTU table for LUCAS method
+  otu_table_lucas <- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol2 == "Lucas"]
+
+# Get OTU IDs detected using LUCAS method
+  otu_ids_lucas <- rownames(otu_table_lucas)[apply(otu_table_lucas, 1, function(x) sum(x) > 0)]
+
+  
+  # Get species names corresponding to OTU IDs detected using INBO_0_10 method
+  species_names_inbo <- tax_table(physeq_loc)[otu_ids_inbo, "species"]
+
+  # Check if there are OTU IDs detected using INBO_0_10 method
+  if (length(otu_ids_inbo) == 0) {
+  # If no OTU IDs detected using INBO_0_10 method, assign a placeholder value
+  species_names_inbo <- character(0)  # Or any appropriate placeholder
+  }
+
+  # Check if there are OTU IDs detected using LUCAS method
+  if (length(otu_ids_lucas) == 0) {
+  # If no OTU IDs detected using LUCAS method, assign a placeholder value
+  species_names_lucas <- character(0)  # Or any appropriate placeholder
+  } else {
+  # Get species names corresponding to OTU IDs detected using LUCAS method
+  species_names_lucas <- tax_table(physeq_loc)[otu_ids_lucas, "species"]
+  }
+
+# Find species detected with INBO_0_10 but not LUCAS
+  species_inbo_not_lucas <- setdiff(species_names_inbo, species_names_lucas)
+
+  
+  if (length(species_inbo_not_lucas) == 0) {
+    cat("Location:", loc, "\n")
+    cat("No species detected using INBO_0_10 that are not detected using LUCAS.\n\n")
+  } else {
+    cat("Location:", loc, "\n")
+    cat("Species detected using INBO_0_10 but not LUCAS:", paste(species_inbo_not_lucas, collapse = ", "), "\n\n")
+  }
+}
+
+
+```
+##### INBO (INBO_0_10 + INBO_10_30) vs Lucas
+
+IS DE CODE UIT DE INSECTEN RMD, CODE NOG AANPASSEN NAAR COLLEMBOLA INDIEN NODIG
+
+
+```{r Species-detected-with-INBOvsLUCAS}
+### INBO (INBO_0_10 + INBO_10_30) vs Lucas
+
+# Comparison of Detection Methods
+for (loc in locations) {
+  # Skip locations where Lucas protocol doesn't exist
+  if (!(loc %in% locations_with_lucas)) {
+    next
+  }
+  
+  # Subset phyloseq object for the current location
+  physeq_loc <- subset_samples(physeq_known_species, Locatie == loc)
+
+  
+  # Subset OTU table for INBO method
+  otu_table_inbo <- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol == "INBO"]
+
+# Get OTU IDs detected using INBO method
+  otu_ids_inbo <- rownames(otu_table_inbo)[apply(otu_table_inbo, 1, function(x) sum(x) > 0)]
+
+# Subset OTU table for LUCAS method
+  otu_table_lucas <- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol == "Lucas"]
+
+# Get OTU IDs detected using LUCAS method
+  otu_ids_lucas <- rownames(otu_table_lucas)[apply(otu_table_lucas, 1, function(x) sum(x) > 0)]
+
+  
+  # Get species names corresponding to OTU IDs detected using INBO method
+  species_names_inbo <- tax_table(physeq_loc)[otu_ids_inbo, "species"]
+
+  # Check if there are OTU IDs detected using INBO method
+  if (length(otu_ids_inbo) == 0) {
+  # If no OTU IDs detected using INBO method, assign a placeholder value
+  species_names_inbo <- character(0)  # Or any appropriate placeholder
+  }
+
+  # Check if there are OTU IDs detected using LUCAS method
+  if (length(otu_ids_lucas) == 0) {
+  # If no OTU IDs detected using LUCAS method, assign a placeholder value
+  species_names_lucas <- character(0)  # Or any appropriate placeholder
+  } else {
+  # Get species names corresponding to OTU IDs detected using LUCAS method
+  species_names_lucas <- tax_table(physeq_loc)[otu_ids_lucas, "species"]
+  }
+
+  # Find species detected with INBO but not LUCAS
+  species_inbo_not_lucas <- setdiff(species_names_inbo, species_names_lucas)
+
+  
+  if (length(species_inbo_not_lucas) == 0) {
+    cat("Location:", loc, "\n")
+    cat("No species detected using INBO that are not detected using LUCAS.\n\n")
+  } else {
+    cat("Location:", loc, "\n")
+    cat("Species detected using INBO but not LUCAS:", paste(species_inbo_not_lucas, collapse = ", "), "\n\n")
+  }
+}
+
+```
+##### Lucas vs INBO_0_10
+
+IS DE CODE UIT DE INSECTEN RMD, CODE NOG AANPASSEN NAAR COLLEMBOLA INDIEN NODIG
+
+
+```{r Species-detected-with-LUCASvsINBO_0_10}
+
+# Lucas vs INBO_0_10
+
+# Comparison of Detection Methods
+for (loc in locations) {
+  # Skip locations where Lucas protocol doesn't exist
+  if (!(loc %in% locations_with_lucas)) {
+    next
+  }
+  
+  # Subset phyloseq object for the current location
+  physeq_loc <- subset_samples(physeq_known_species, Locatie == loc)
+
+  
+  # Subset OTU table for INBO_0_10 method
+  otu_table_inbo <- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol2 == "INBO_0_10"]
+
+# Get OTU IDs detected using INBO_0_10 method
+  otu_ids_inbo <- rownames(otu_table_inbo)[apply(otu_table_inbo, 1, function(x) sum(x) > 0)]
+
+# Subset OTU table for LUCAS method
+  otu_table_lucas <- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol2 == "Lucas"]
+
+# Get OTU IDs detected using LUCAS method
+  otu_ids_lucas <- rownames(otu_table_lucas)[apply(otu_table_lucas, 1, function(x) sum(x) > 0)]
+
+  
+  # Get species names corresponding to OTU IDs detected using INBO_0_10 method
+  species_names_inbo <- tax_table(physeq_loc)[otu_ids_inbo, "species"]
+
+  # Check if there are OTU IDs detected using INBO_0_10 method
+  if (length(otu_ids_inbo) == 0) {
+  # If no OTU IDs detected using INBO_0_10 method, assign a placeholder value
+  species_names_inbo <- character(0)  # Or any appropriate placeholder
+  }
+
+  # Check if there are OTU IDs detected using LUCAS method
+  if (length(otu_ids_lucas) == 0) {
+  # If no OTU IDs detected using LUCAS method, assign a placeholder value
+  species_names_lucas <- character(0)  # Or any appropriate placeholder
+  } else {
+  # Get species names corresponding to OTU IDs detected using LUCAS method
+  species_names_lucas <- tax_table(physeq_loc)[otu_ids_lucas, "species"]
+  }
+
+# Find species detected with LUCAS but not INBO_0_10
+  species_lucas_not_inbo <- setdiff(species_names_lucas, species_names_inbo)
+
+  
+  if (length(species_lucas_not_inbo) == 0) {
+    cat("Location:", loc, "\n")
+    cat("No species detected using LUCAS that are not detected using INBO_0_10.\n\n")
+  } else {
+    cat("Location:", loc, "\n")
+    cat("Species detected using LUCAS but not INBO_0_10:", paste(species_lucas_not_inbo, collapse = ", "), "\n\n")
+  }
+}
+```
+##### Lucas vs INBO (INBO_0_10 + INBO_10_30)
+
+IS DE CODE UIT DE INSECTEN RMD, CODE NOG AANPASSEN NAAR COLLEMBOLA INDIEN NODIG
+
+
+```{r Species-detected-with-LUCASvsINBO}
+
+# Lucas vs INBO (INBO_0_10 + INBO_10_30)
+
+# Comparison of Detection Methods
+for (loc in locations) {
+  # Skip locations where Lucas protocol doesn't exist
+  if (!(loc %in% locations_with_lucas)) {
+    next
+  }
+  
+  # Subset phyloseq object for the current location
+  physeq_loc <- subset_samples(physeq_known_species, Locatie == loc)
+
+  
+  # Subset OTU table for INBO method
+  otu_table_inbo <- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol == "INBO"]
+
+# Get OTU IDs detected using INBO method
+  otu_ids_inbo <- rownames(otu_table_inbo)[apply(otu_table_inbo, 1, function(x) sum(x) > 0)]
+
+# Subset OTU table for LUCAS method
+  otu_table_lucas <- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol == "Lucas"]
+
+# Get OTU IDs detected using LUCAS method
+  otu_ids_lucas <- rownames(otu_table_lucas)[apply(otu_table_lucas, 1, function(x) sum(x) > 0)]
+
+  
+  # Get species names corresponding to OTU IDs detected using INBO method
+  species_names_inbo <- tax_table(physeq_loc)[otu_ids_inbo, "species"]
+
+  # Check if there are OTU IDs detected using INBO_0_10 method
+  if (length(otu_ids_inbo) == 0) {
+  # If no OTU IDs detected using INBO method, assign a placeholder value
+  species_names_inbo <- character(0)  # Or any appropriate placeholder
+  }
+
+  # Check if there are OTU IDs detected using LUCAS method
+  if (length(otu_ids_lucas) == 0) {
+  # If no OTU IDs detected using LUCAS method, assign a placeholder value
+  species_names_lucas <- character(0)  # Or any appropriate placeholder
+  } else {
+  # Get species names corresponding to OTU IDs detected using LUCAS method
+  species_names_lucas <- tax_table(physeq_loc)[otu_ids_lucas, "species"]
+  }
+
+  # Find species detected with LUCAS but not INBO
+  species_lucas_not_inbo <- setdiff(species_names_lucas, species_names_inbo)
+
+  
+  if (length(species_lucas_not_inbo) == 0) {
+    cat("Location:", loc, "\n")
+    cat("No species detected using LUCAS that are not detected using INBO.\n\n")
+  } else {
+    cat("Location:", loc, "\n")
+    cat("Species detected using LUCAS but not INBO:", paste(species_lucas_not_inbo, collapse = ", "), "\n\n")
+  }
+}
+```
+
+#### Genus niveau
+
+IS DE CODE UIT DE INSECTEN RMD, CODE NOG AANPASSEN NAAR COLLEMBOLA INDIEN NODIG
+
+GEKOZEN PHYLOSEQ OBJECT OP DE EERSTE LIJN (physeq_known_genus) IS WEL AL JUIST
+
+
+```{r Perprocessing Genus-detected-with-INBO(_0_10)vsLUCAS or LUCASvsINBO(_0_10)}
+
+# 1. Preprocessing for all comparisons
+
+
+otu_table <- otu_table(physeq_known_genus)
+head(otu_table)
+tax_table <- tax_table(physeq_known_genus)
+head(tax_table)
+sample_data <- sample_data(physeq_known_genus)
+head(sample_data)
+
+unique(sample_data(physeq_known_genus)$Protocol2)
+
+locations <- unique(sample_data(physeq_known_genus)$Locatie)
+
+# Extract locations with both INBO and Lucas protocols
+locations_with_lucas <- unique(sample_data(physeq_known_genus)$Locatie[sample_data(physeq_known_genus)$Protocol2 == "Lucas"])
+
+```
+##### INBO_0_10 vs Lucas
+
+IS DE CODE UIT DE INSECTEN RMD, CODE NOG AANPASSEN NAAR COLLEMBOLA INDIEN NODIG
+
+
+```{r Genus-detected-with-INBO_0_10vsLUCAS}
+
+# INBO_0_10 vs Lucas
+
+# Comparison of Detection Methods
+for (loc in locations) {
+  # Skip locations where Lucas protocol doesn't exist
+  if (!(loc %in% locations_with_lucas)) {
+    next
+  }
+  
+  # Subset phyloseq object for the current location
+  physeq_loc <- subset_samples(physeq_known_genus, Locatie == loc)
+
+  
+  # Subset OTU table for INBO_0_10 method
+  otu_table_inbo <- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol2 == "INBO_0_10"]
+
+# Get OTU IDs detected using INBO_0_10 method
+  otu_ids_inbo <- rownames(otu_table_inbo)[apply(otu_table_inbo, 1, function(x) sum(x) > 0)]
+
+# Subset OTU table for LUCAS method
+  otu_table_lucas <- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol2 == "Lucas"]
+
+# Get OTU IDs detected using LUCAS method
+  otu_ids_lucas <- rownames(otu_table_lucas)[apply(otu_table_lucas, 1, function(x) sum(x) > 0)]
+
+  
+  # Get genus names corresponding to OTU IDs detected using INBO_0_10 method
+  genus_names_inbo <- tax_table(physeq_loc)[otu_ids_inbo, "genus"]
+
+  # Check if there are OTU IDs detected using INBO_0_10 method
+  if (length(otu_ids_inbo) == 0) {
+  # If no OTU IDs detected using INBO_0_10 method
+  genus_names_inbo <- character(0)
+  }
+
+  # Check if there are OTU IDs detected using LUCAS method
+  if (length(otu_ids_lucas) == 0) {
+  # If no OTU IDs detected using LUCAS method
+  genus_names_lucas <- character(0)
+  } else {
+  # Get genus names corresponding to OTU IDs detected using LUCAS method
+  genus_names_lucas <- tax_table(physeq_loc)[otu_ids_lucas, "genus"]
+  }
+
+# Find genus detected with INBO_0_10 but not LUCAS
+  genus_inbo_not_lucas <- setdiff(genus_names_inbo, genus_names_lucas)
+
+  
+  if (length(genus_inbo_not_lucas) == 0) {
+    cat("Location:", loc, "\n")
+    cat("No genus detected using INBO_0_10 that are not detected using LUCAS.\n\n")
+  } else {
+    cat("Location:", loc, "\n")
+    cat("Genus detected using INBO_0_10 but not LUCAS:", paste(genus_inbo_not_lucas, collapse = ", "), "\n\n")
+  }
+}
+
+
+```
+
+##### INBO (INBO_0_10 + INBO_10_30) vs Lucas
+
+IS DE CODE UIT DE INSECTEN RMD, CODE NOG AANPASSEN NAAR COLLEMBOLA INDIEN NODIG
+
+
+```{r Genus-detected-with-INBOvsLUCAS}
+### INBO (INBO_0_10 + INBO_10_30) vs Lucas
+
+# Comparison of Detection Methods
+for (loc in locations) {
+  # Skip locations where Lucas protocol doesn't exist
+  if (!(loc %in% locations_with_lucas)) {
+    next
+  }
+  
+  # Subset phyloseq object for the current location
+  physeq_loc <- subset_samples(physeq_known_genus, Locatie == loc)
+
+  
+  # Subset OTU table for INBO method
+  otu_table_inbo <- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol == "INBO"]
+
+# Get OTU IDs detected using INBO method
+  otu_ids_inbo <- rownames(otu_table_inbo)[apply(otu_table_inbo, 1, function(x) sum(x) > 0)]
+
+# Subset OTU table for LUCAS method
+  otu_table_lucas <- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol == "Lucas"]
+
+# Get OTU IDs detected using LUCAS method
+  otu_ids_lucas <- rownames(otu_table_lucas)[apply(otu_table_lucas, 1, function(x) sum(x) > 0)]
+
+  
+  # Get genus names corresponding to OTU IDs detected using INBO method
+  genus_names_inbo <- tax_table(physeq_loc)[otu_ids_inbo, "genus"]
+
+  # Check if there are OTU IDs detected using INBO method
+  if (length(otu_ids_inbo) == 0) {
+  # If no OTU IDs detected using INBO method
+  genus_names_inbo <- character(0)
+  }
+
+  # Check if there are OTU IDs detected using LUCAS method
+  if (length(otu_ids_lucas) == 0) {
+  # If no OTU IDs detected using LUCAS method
+  genus_names_lucas <- character(0)
+  } else {
+  # Get genus names corresponding to OTU IDs detected using LUCAS method
+  genus_names_lucas <- tax_table(physeq_loc)[otu_ids_lucas, "genus"]
+  }
+
+  # Find genus detected with INBO but not LUCAS
+  genus_inbo_not_lucas <- setdiff(genus_names_inbo, genus_names_lucas)
+
+  
+  if (length(genus_inbo_not_lucas) == 0) {
+    cat("Location:", loc, "\n")
+    cat("No genus detected using INBO that are not detected using LUCAS.\n\n")
+  } else {
+    cat("Location:", loc, "\n")
+    cat("Genus detected using INBO but not LUCAS:", paste(genus_inbo_not_lucas, collapse = ", "), "\n\n")
+  }
+}
+
+```
+##### Lucas vs INBO_0_10
+
+IS DE CODE UIT DE INSECTEN RMD, CODE NOG AANPASSEN NAAR COLLEMBOLA INDIEN NODIG
+
+
+```{r Genus-detected-with-LUCASvsINBO_0_10}
+
+# Lucas vs INBO_0_10
+
+# Comparison of Detection Methods
+for (loc in locations) {
+  # Skip locations where Lucas protocol doesn't exist
+  if (!(loc %in% locations_with_lucas)) {
+    next
+  }
+  
+  # Subset phyloseq object for the current location
+  physeq_loc <- subset_samples(physeq_known_genus, Locatie == loc)
+
+  
+  # Subset OTU table for INBO_0_10 method
+  otu_table_inbo <- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol2 == "INBO_0_10"]
+
+# Get OTU IDs detected using INBO_0_10 method
+  otu_ids_inbo <- rownames(otu_table_inbo)[apply(otu_table_inbo, 1, function(x) sum(x) > 0)]
+
+# Subset OTU table for LUCAS method
+  otu_table_lucas <- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol2 == "Lucas"]
+
+# Get OTU IDs detected using LUCAS method
+  otu_ids_lucas <- rownames(otu_table_lucas)[apply(otu_table_lucas, 1, function(x) sum(x) > 0)]
+
+  
+  # Get genus names corresponding to OTU IDs detected using INBO_0_10 method
+  genus_names_inbo <- tax_table(physeq_loc)[otu_ids_inbo, "genus"]
+
+  # Check if there are OTU IDs detected using INBO_0_10 method
+  if (length(otu_ids_inbo) == 0) {
+  # If no OTU IDs detected using INBO_0_10 method
+  genus_names_inbo <- character(0)
+  }
+
+  # Check if there are OTU IDs detected using LUCAS method
+  if (length(otu_ids_lucas) == 0) {
+  # If no OTU IDs detected using LUCAS method
+  genus_names_lucas <- character(0)
+  } else {
+  # Get genus names corresponding to OTU IDs detected using LUCAS method
+  genus_names_lucas <- tax_table(physeq_loc)[otu_ids_lucas, "genus"]
+  }
+
+# Find genus detected with LUCAS but not INBO_0_10
+  genus_lucas_not_inbo <- setdiff(genus_names_lucas, genus_names_inbo)
+
+  
+  if (length(genus_lucas_not_inbo) == 0) {
+    cat("Location:", loc, "\n")
+    cat("No genus detected using LUCAS that are not detected using INBO_0_10.\n\n")
+  } else {
+    cat("Location:", loc, "\n")
+    cat("Genus detected using LUCAS but not INBO_0_10:", paste(genus_lucas_not_inbo, collapse = ", "), "\n\n")
+  }
+}
+```
+##### Lucas vs INBO (INBO_0_10 + INBO_10_30)
+
+IS DE CODE UIT DE INSECTEN RMD, CODE NOG AANPASSEN NAAR COLLEMBOLA INDIEN NODIG
+
+
+```{r Genus-detected-with-LUCASvsINBO}
+
+# Lucas vs INBO (INBO_0_10 + INBO_10_30)
+
+# Comparison of Detection Methods
+for (loc in locations) {
+  # Skip locations where Lucas protocol doesn't exist
+  if (!(loc %in% locations_with_lucas)) {
+    next
+  }
+  
+  # Subset phyloseq object for the current location
+  physeq_loc <- subset_samples(physeq_known_genus, Locatie == loc)
+
+  
+  # Subset OTU table for INBO method
+  otu_table_inbo <- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol == "INBO"]
+
+# Get OTU IDs detected using INBO method
+  otu_ids_inbo <- rownames(otu_table_inbo)[apply(otu_table_inbo, 1, function(x) sum(x) > 0)]
+
+# Subset OTU table for LUCAS method
+  otu_table_lucas <- otu_table(physeq_loc)[, sample_data(physeq_loc)$Protocol == "Lucas"]
+
+# Get OTU IDs detected using LUCAS method
+  otu_ids_lucas <- rownames(otu_table_lucas)[apply(otu_table_lucas, 1, function(x) sum(x) > 0)]
+
+  
+  # Get genus names corresponding to OTU IDs detected using INBO method
+  genus_names_inbo <- tax_table(physeq_loc)[otu_ids_inbo, "genus"]
+
+  # Check if there are OTU IDs detected using INBO_0_10 method
+  if (length(otu_ids_inbo) == 0) {
+  # If no OTU IDs detected using INBO method
+  genus_names_inbo <- character(0)
+  }
+
+  # Check if there are OTU IDs detected using LUCAS method
+  if (length(otu_ids_lucas) == 0) {
+  # If no OTU IDs detected using LUCAS method
+  genus_names_lucas <- character(0)
+  } else {
+  # Get genus names corresponding to OTU IDs detected using LUCAS method
+  genus_names_lucas <- tax_table(physeq_loc)[otu_ids_lucas, "genus"]
+  }
+
+  # Find genus detected with LUCAS but not INBO
+  genus_lucas_not_inbo <- setdiff(genus_names_lucas, genus_names_inbo)
+
+  
+  if (length(genus_lucas_not_inbo) == 0) {
+    cat("Location:", loc, "\n")
+    cat("No genus detected using LUCAS that are not detected using INBO.\n\n")
+  } else {
+    cat("Location:", loc, "\n")
+    cat("Genus detected using LUCAS but not INBO:", paste(genus_lucas_not_inbo, collapse = ", "), "\n\n")
+  }
+}
+```
+
+
+
+Unieke en gedeelde taxa per landgebruik:
+
+Aantal unieke OTUs was nog veel hoger voor bos toen Gontrode en de strooiselstalen nog in de dataset zaten (strooisel zit als landgebruik 'Bos' in de dataset)
+
+```{r venn-land-use-rarefied}
+tidy_physeq_rarefied %>%
+  tidytacos::tacoplot_venn(Landgebruik)
+```
+
+```{r venn-land-use-full}
+tidy_physeq_full %>%
+  tidytacos::tacoplot_venn(Landgebruik)
+```
+
+```{r venn-known-species}
+tidy_physeq_known_species %>%
+  tidytacos::tacoplot_venn(Landgebruik)
+```
+
+
+```{r}
+tidy_physeq_rarefied %>%
+  tidytacos::tacoplot_stack()
+```
+
+```{r}
+tidy_physeq_known_species %>%
+  tidytacos::tacoplot_stack()
+```
+
+Hiervoor gebruiken we beter de Krona charts
+
+```{r poging-krona-chart, eval=FALSE}
+# integratie Krona werkt nog niet, installatie probleem
+
+# Create a new combined column
+combined_column <- paste(sample_data(physeq)$Landgebruik, sample_data(physeq)$Protocol2, sep = "_")
+
+# Add the new combined column to the sample metadata with the desired name
+sample_data(physeq)$Landgebruik_Protocol2 <- combined_column
+
+# Update the phyloseq object with the modified sample data
+physeq <- merge_phyloseq(physeq, sample_data(physeq))
+
+
+if (system(command = "which ktImportText",  intern = FALSE, ignore.stderr = TRUE,  ignore.stdout = TRUE) != 1) {
+  psadd::plot_krona(physeq, "ejp_Olig01_collembola_rar_species_alle_stalen_Landgebruik_per_Protocol2", "Landgebruik_Protocol2", trim = T)
+}
+
+
+
+```
+
+onderstaande bar plots nog aan te passen
+
+```{r}
+# werkt nog niet
+
+tidy_physeq %>%
+  tidytacos::tacoplot_stack(x = Landgebruik)
+```
+
+```{r}
+
+# werkt nog niet
+
+tidy_physeq %>%
+  tidytacos::tacoplot_stack(x = Protocol2)
+```
+
+
+## Alfa-diversiteit
+
+### Regressiemodel met correctie voor totaal aantal reads
+
+Het geobserveerde aantal taxa neemt toe met het aantal reads in een staal:
+
+```{r}
+tidy_physeq_full$samples %>%
+  filter(total_count > 0) %>%
+  ggplot(
+    aes(x = total_count, y = observed)) +
+  geom_point() +
+  scale_x_log10() +
+  labs(y = "Observed number of taxa")
+```
+
+We fitten een model waarbij we de log van het totaal aantal reads in een staal als covariaat toevoegen samen met landgebruik en Protocol2 van het staal (de laatste twee in interactie).
+We voegen ook een random intercept toe die aangeeft op welke locatie een staal werd genomen.
+Hiermee geven we aan dat stalen op verschillende Protocol2, maar dezelfde locatie, gecorreleerd zijn.
+Voor deze analyse, verwijderen we enkele stalen met een laag totaal aantal reads ($\leq 1e+4$).
+
+We modelleren de soortenrijkdom als een Negatief Binomiaal model omdat we verwachten dat deze data overdispersie vertonen ten opzichte van een Poisson verdeling (waar de veronderstelling is dat de variantie gelijk aan het gemiddelde).
+
+```{r m-coll01-collembola-richness}
+samples_totcount_10k <- tidy_physeq$samples %>%
+  filter(total_count > 1e+4)
+
+form_collembola_richness <- formula(
+  observed ~
+    log(total_count)
+  + Landgebruik
+  + Protocol2
+  + Landgebruik:Protocol2
+  + (1 | Naam)
+  )
+
+m_collembola_richness <- glmmTMB::glmmTMB(
+  formula = form_collembola_richness,
+  data = samples_totcount_10k,
+  family = glmmTMB::nbinom2())
+```
+
+Model validatie toont dat er problemen zijn met de residuele variabiliteit.
+Er lijkt vooral overdispersie (variabiliteit groter dan verwacht) te zijn bij grote waarden van de soortenrijkdom.
+
+
+```{r}
+performance::check_model(m_collembola_richness)
+```
+
+
+```{r m-collembola-richness-summary}
+summary(m_collembola_richness)
+```
+
+```{r m-collembola-richness-anova}
+car::Anova(m_collembola_richness)
+```
+
+Zoals te verwachten, is het belangrijk om te corrigeren voor het totaal aantal reads:
+
+```{r}
+marginaleffects::plot_predictions(
+  m_collembola_richness,
+  condition = c("total_count"),
+  vcov = vcov(m_collembola_richness)) +
+  labs(y = "Voorspeld aantal taxa") +
+  scale_x_log10()
+```
+
+
+We kunnen nu predicties maken van soortenrijkdom waarbij we controleren voor het totaal aantal reads in een staal:
+
+```{r m-collembola-richness-predictions}
+marginaleffects::plot_predictions(
+  m_collembola_richness,
+  condition = c("Landgebruik", "Protocol2"),
+  vcov = vcov(m_collembola_richness),
+  re.form = NA,
+  type = "response") +
+  labs(y = "Voorspelde aantal taxa")
+```
+
+
+### Rarefaction analyse 
+
+Dit is een alternatief voor voorgaande analyse.
+Schatting van de soortenrijkdom via rarefaction analyse.
+
+```{r rarefaction}
+sam_new <- data.frame(sample_data(physeq_full))
+
+
+estimated_species_richness <- vegan::rarefy(
+  veganobject_physeq_full,
+  31655,
+  se = TRUE,
+  MARGIN = 1)
+
+
+true_rarefaction_results <- cbind(
+  sam_new %>% select(Naam, Protocol2, Landgebruik),
+  est = estimated_species_richness["S", ],
+  se = estimated_species_richness["se", ]) %>%
+  as_tibble() %>%
+  mutate(est_lower = est - 2 * se,
+         est_upper = est + 2 * se)
+```
+
+
+```{r}
+glimpse(true_rarefaction_results)
+# verwijder gevallen waar se te klein is of nul is
+true_rarefaction_results <- true_rarefaction_results %>%
+  filter(se > 0.1)
+```
+
+```{r m-rarefied}
+library(brms)
+
+form_rarefaction <- bf(
+  est | se(se, sigma = TRUE) ~
+  + Landgebruik
+  + Protocol2
+  + Landgebruik:Protocol2
+  + (1 | Naam)
+)
+
+m_rarefaction <- brm(
+  formula = form_rarefaction,
+  data = true_rarefaction_results,
+  family = gaussian())
+
+```
+
+
+
+```{r m-rarefied-summary}
+summary(m_rarefaction)
+```
+
+Dit model geeft gelijkaardige resultaten als het model waarbij we rechtstreeks werkten met de geobserveerde aantallen taxa en (de log van) het totaal aantal reads als covariaat toevoegden.
+
+```{r m-rarefied-predictions}
+conditional_effects(
+  m_rarefaction,
+    effects = c("Landgebruik:Protocol2"),
+  re.form = NA)
+```
+
+## OTU counts 
+
+per class full Collembola data non rarefied
+
+```{r per-class-full-primerset}
+# Count OTUs per Class
+tax_table(physeq_full) %>%
+  as.data.frame() %>%
+  as_tibble() %>%
+  group_by(Class) %>%
+  summarise(OTU_Count = n()) %>%
+  arrange(desc(OTU_Count)) %>%
+  kable()
+```
+
+per genus full Collembola data non rarefied
+
+```{r per-genus-full-primerset}
+# Count OTUs per Genus
+tax_table(physeq_full) %>%
+  as.data.frame() %>%
+  as_tibble() %>%
+  group_by(Genus) %>%
+  summarise(OTU_Count = n()) %>%
+  arrange(desc(OTU_Count)) %>%
+  kable()
+```
+
+
+per class collembola rarefied
+
+```{r per-class-collembola-rarefied}
+# Count OTUs per Class
+tax_table(physeq) %>%
+  as.data.frame() %>%
+  as_tibble() %>%
+  group_by(Class) %>%
+  summarise(OTU_Count = n()) %>%
+  arrange(desc(OTU_Count)) %>%
+  kable()
+```
+
+per order collembola rarefied
+
+```{r per-order-collembola-rarefied}
+# Count OTUs per order
+tax_table(physeq) %>%
+  as.data.frame() %>%
+  as_tibble() %>%
+  group_by(Order) %>%
+  summarise(OTU_Count = n()) %>%
+  arrange(desc(OTU_Count)) %>%
+  kable()
+```
+
+per order collembola rarefied known orders
+
+```{r per-known-order-collembola-rarefied}
+# Count OTUs per order
+tax_table(physeq_known_order) %>%
+  as.data.frame() %>%
+  as_tibble() %>%
+  group_by(Order) %>%
+  summarise(OTU_Count = n()) %>%
+  arrange(desc(OTU_Count)) %>%
+  kable()
+```
+
+per family collembola rarefied
+
+```{r per-family-collembola-sl}
+# Count OTUs per family
+tax_table(physeq) %>%
+  as.data.frame() %>%
+  as_tibble() %>%
+  group_by(Family) %>%
+  summarise(OTU_Count = n()) %>%
+  arrange(desc(OTU_Count)) %>%
+  kable()
+```
+
+per family collembola rarefied subset known families
+
+```{r per-known-family-collembola-rarefied}
+# Count OTUs per family
+tax_table(physeq_known_family) %>%
+  as.data.frame() %>%
+  as_tibble() %>%
+  group_by(Family) %>%
+  summarise(OTU_Count = n()) %>%
+  arrange(desc(OTU_Count)) %>%
+  kable()
+```
+
+ZITTEN HIER
+
+
+Per genus collembola sl subset
+
+```{r per-genus-collembola-sl}
+tax_table(physeq) %>%
+  as.data.frame() %>%
+  group_by(genus) %>%
+  summarise(OTU_Count = n()) %>%
+  arrange(desc(OTU_Count)) %>%
+  kable()
+```
+
+Per genus collembola sl subset known genera
+
+```{r per-known-genus-collembola-sl}
+tax_table(physeq_known_genera) %>%
+  as.data.frame() %>%
+  group_by(genus) %>%
+  summarise(OTU_Count = n()) %>%
+  arrange(desc(OTU_Count)) %>%
+  kable()
+```
+
+Per species (check of er species zijn met meer dan 1 OTU)
+
+```{r per-species-collembola-sl}
+tax_table(physeq) %>%
+  as.data.frame() %>%
+  group_by(species) %>%
+  summarise(OTU_Count = n()) %>%
+  filter(OTU_Count > 1) %>%
+  arrange(desc(OTU_Count)) %>%
+  kable()
+```
+
+Per species known species (check of er species zijn met meer dan 1 OTU)
+
+```{r per-known-species-collembola-sl}
+tax_table(physeq_known_species) %>%
+  as.data.frame() %>%
+  group_by(species) %>%
+  summarise(OTU_Count = n()) %>%
+  filter(OTU_Count > 1) %>%
+  arrange(desc(OTU_Count)) %>%
+  kable()
+```
+
+
+## Read counts
+
+Overzicht van som van reads per phylum:
+
+
+```{r read-counts-full-dataset-phylum}
+
+tidy_physeq_inse01 %>%
+  tidytacos::aggregate_taxa(rank = "phylum") %>%
+  tidytacos::everything() %>%
+  group_by(phylum) %>%
+  summarise(read_counts = sum(count)) %>%
+  mutate(percentage = round((read_counts / sum(read_counts)) * 100, 1)) %>% # Round to 2 decimal places
+  arrange(desc(read_counts)) %>%
+  select(phylum, percentage) %>% # Keep only necessary columns if desired
+  kable()
+```
+
+Overzicht van som van reads per class:
+
+
+```{r read-counts-full-dataset-class}
+
+tidy_physeq_inse01 %>%
+  tidytacos::aggregate_taxa(rank = "class") %>%
+  tidytacos::everything() %>%
+  group_by(class) %>%
+  summarise(read_counts = sum(count)) %>%
+  mutate(percentage = round((read_counts / sum(read_counts)) * 100, 2)) %>% # Calculate and round percentage
+  arrange(desc(read_counts)) %>%
+  select(class, percentage) %>% # Keep only necessary columns if desired
+  kable()
+```
+
+
+Overzicht van som van reads per phylum collembola sl subset:
+
+```{r read-counts-collembola-sl-subset-phylum}
+tidy_physeq_collembola %>%
+  tidytacos::aggregate_taxa(rank = "phylum") %>%
+  tidytacos::everything() %>%
+  group_by(phylum) %>%
+  summarise(read_counts = sum(count)) %>%
+  arrange(desc(read_counts)) %>%
+  kable()
+```
+
+Overzicht van som van reads per class collembola sl subset:
+
+```{r read-counts-collembola-sl-subset-class}
+tidy_physeq_collembola %>%
+  tidytacos::aggregate_taxa(rank = "class") %>%
+  tidytacos::everything() %>%
+  group_by(class) %>%
+  summarise(read_counts = sum(count)) %>%
+  mutate(percentage = round((read_counts / sum(read_counts)) * 100, 2)) %>% # Calculate and round percentage
+  arrange(desc(read_counts)) %>%
+  select(class, percentage) %>% # Keep only necessary columns if desired
+  kable()
+```
+
+Overzicht van som van reads per orde:
+
+```{r read-counts-collembola-sl-subset-order}
+tidy_physeq_collembola %>%
+  tidytacos::aggregate_taxa(rank = "order") %>%
+  tidytacos::everything() %>%
+  group_by(order) %>%
+  summarise(read_counts = sum(count)) %>%
+  mutate(percentage = round((read_counts / sum(read_counts)) * 100, 2)) %>% # Calculate and round percentage
+  arrange(desc(read_counts)) %>%
+  select(order, percentage) %>% # Keep only necessary columns if desired
+  kable()
+```
+
+Overzicht van som van reads per orde known orders:
+
+```{r read-counts-collembola-sl-subset-known-order}
+tidy_physeq_known_order %>%
+  tidytacos::aggregate_taxa(rank = "order") %>%
+  tidytacos::everything() %>%
+  group_by(order) %>%
+  summarise(read_counts = sum(count)) %>%
+  mutate(percentage = round((read_counts / sum(read_counts)) * 100, 2)) %>% # Calculate and round percentage
+  arrange(desc(read_counts)) %>%
+  select(order, percentage) %>% # Keep only necessary columns if desired
+  kable()
+```
+
+Overzicht van som van reads per family:
+
+```{r read-counts-collembola-sl-subset-family}
+tidy_physeq_collembola %>%
+  tidytacos::aggregate_taxa(rank = "family") %>%
+  tidytacos::everything() %>%
+  group_by(family) %>%
+  summarise(read_counts = sum(count)) %>%
+  mutate(percentage = round((read_counts / sum(read_counts)) * 100, 2)) %>% # Calculate and round percentage
+  arrange(desc(read_counts)) %>%
+  select(family, percentage) %>% # Keep only necessary columns if desired
+  kable()
+```
+
+Overzicht van som van reads per family known families:
+
+```{r read-counts-collembola-sl-subset-known-family}
+tidy_physeq_known_family %>%
+  tidytacos::aggregate_taxa(rank = "family") %>%
+  tidytacos::everything() %>%
+  group_by(family) %>%
+  summarise(read_counts = sum(count)) %>%
+  mutate(percentage = round((read_counts / sum(read_counts)) * 100, 2)) %>% # Calculate and round percentage
+  arrange(desc(read_counts)) %>%
+  select(family, percentage) %>% # Keep only necessary columns if desired
+  kable()
+```
+
+Overzicht van som van reads per genus:
+
+```{r read-counts-collembola-sl-subset-genus}
+tidy_physeq_collembola %>%
+  tidytacos::aggregate_taxa(rank = "genus") %>%
+  tidytacos::everything() %>%
+  group_by(genus) %>%
+  summarise(read_counts = sum(count)) %>%
+  mutate(percentage = round((read_counts / sum(read_counts)) * 100, 2)) %>% # Calculate and round percentage
+  arrange(desc(read_counts)) %>%
+  select(genus, percentage) %>% # Keep only necessary columns if desired
+  kable()
+```
+
+Overzicht van som van reads per genus known genera:
+
+```{r read-counts-collembola-sl-subset-known-genera}
+tidy_physeq_known_genera %>%
+  tidytacos::aggregate_taxa(rank = "genus") %>%
+  tidytacos::everything() %>%
+  group_by(genus) %>%
+  summarise(read_counts = sum(count)) %>%
+  mutate(percentage = round((read_counts / sum(read_counts)) * 100, 2)) %>% # Calculate and round percentage
+  arrange(desc(read_counts)) %>%
+  select(genus, percentage) %>% # Keep only necessary columns if desired
+  kable()
+```
+
+Overzicht van som van reads per species:
+
+```{r read-counts-collembola-sl-subset-species}
+tidy_physeq_collembola %>%
+  tidytacos::aggregate_taxa(rank = "species") %>%
+  tidytacos::everything() %>%
+  group_by(species) %>%
+  summarise(read_counts = sum(count)) %>%
+  mutate(percentage = round((read_counts / sum(read_counts)) * 100, 2)) %>% # Calculate and round percentage
+  arrange(desc(read_counts)) %>%
+  select(species, percentage) %>% # Keep only necessary columns if desired
+  kable()
+```
+
+Overzicht van som van reads per species known species:
+
+```{r read-counts-collembola-sl-subset-known-species}
+tidy_physeq_known_species %>%
+  tidytacos::aggregate_taxa(rank = "species") %>%
+  tidytacos::everything() %>%
+  group_by(species) %>%
+  summarise(read_counts = sum(count)) %>%
+  mutate(percentage = round((read_counts / sum(read_counts)) * 100, 2)) %>% # Calculate and round percentage
+  arrange(desc(read_counts)) %>%
+  select(species, percentage) %>% # Keep only necessary columns if desired
+  kable()
+```
+
+## Ordinatie
+
+```{r ordination-phyloseq}
+
+# Perform PCoA
+pcoa_result <- ordinate(physeq_full_rarefied, method = "PCoA", distance = "bray")
+
+# Create the ordination plot with color based on land_use and shape
+# based on Protocol2
+plot_ordination(physeq_full_rarefied, pcoa_result, type = "samples",
+                color = "Locatie") +
+  theme_minimal()
+```
+
+
+```{r ordination-phyloseq-CLR, eval=FALSE}
+
+# Hier is duidelijk iets fout gegaan, komt niet overeen met ordinatie plots uit shiny phyloseq
+
+# Perform CLR transformation
+clr_physeq_rarefied <- microbiome::transform(physeq_full_rarefied, "clr")
+
+# Calculate Bray distance matrix based on the CLR-transformed data
+bray_distance <- phyloseq::distance(clr_physeq_rarefied, method = "bray")
+
+# Perform PCoA
+pcoa_result <- ordinate(clr_physeq_rarefied, method = "PCoA", distance = "bray")
+
+# Create the ordination plot with color based on land_use and shape
+# based on Protocol2
+plot_ordination(clr_physeq_rarefied, pcoa_result, type = "samples",
+                color = "Locatie") +
+  theme_minimal()
+```
